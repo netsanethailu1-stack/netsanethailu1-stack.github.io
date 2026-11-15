@@ -31,7 +31,36 @@ a phone that already has the app, it appears the second time the app is opened.
 
 HTTPS is required: the app lock and offline mode do not work on plain http.
 
+## The Android app
+
+`android/Mahiber.apk` is the installable Android app (package ID `app.mahiber.records`,
+version 1.0.0.0), built with PWABuilder. It is a thin wrapper that opens the hosted site
+full screen, so publishing a change to the site updates the app too; a new APK is only
+needed if the name, icon, colours or address change.
+
+Install it on an Android phone:
+
+1. On the phone open https://netsanethailu1-stack.github.io/android/Mahiber.apk in Chrome.
+2. Open the downloaded file. Android asks to allow installing from Chrome; allow it once.
+3. Open Mahiber from the app drawer. The first launch needs internet; after that it works offline.
+
+`.well-known/assetlinks.json` on the site tells Android that the app and the site belong
+together. Without it the app shows a browser address bar at the top.
+
+The signing key is NOT in this folder. It is in `Documents\Mahiber-signing-key` on the PC
+(`signing.keystore` and `signing-key-info.txt` with its passwords). Back that folder up
+somewhere private and never share or publish it: whoever has it can release updates as
+this app, and without it you cannot update the app.
+
+iPhone has no APK. On iOS open the site in Safari, tap Share, then "Add to Home Screen".
+
 ## Put it on Google Play
+
+`android/Mahiber.aab` is the bundle Google Play wants. Steps 1 to 4 below are done; what is
+left is a Google Play developer account (one-time 25 USD fee) and step 5. If you turn on
+Play App Signing, Google signs the app with its own key: copy the SHA-256 fingerprint from
+Play Console (Setup, App signing) into `.well-known/assetlinks.json` as a second
+fingerprint and publish again, or the address bar comes back.
 
 Google Play accepts a web app wrapped as a Trusted Web Activity.
 
