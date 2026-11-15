@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.mahiber.records",
+        "sha256_cert_fingerprints": ["2F:38:DB:E5:08:9E:B0:F4:1C:17:68:D7:6A:A0:6C:44:5E:BD:3E:8E:68:9C:7A:F3:25:16:6D:0A:C7:05:90:8E"]
+      }
+    }]
