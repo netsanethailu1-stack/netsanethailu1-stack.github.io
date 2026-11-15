@@ -12,6 +12,17 @@ everything on one phone and works offline. It never holds or moves money.
   squircle. The `icon-*.png` files are made from these two (192 and 512 px for the manifest
   and Google Play, 180 px for iPhone). If you change the SVG, export the PNGs again.
 
+## Where it is hosted
+
+The app is published with GitHub Pages at https://netsanethailu1-stack.github.io/ (repository
+`netsanethailu1-stack.github.io`). After changing a file, publish it with:
+
+    powershell -ExecutionPolicy Bypass -File .\publish.ps1
+
+It uploads only the site's files that changed (not `tests/` or the script itself) and needs
+the GitHub CLI signed in once (`gh auth login`). A change shows up after about a minute; on
+a phone that already has the app, it appears the second time the app is opened.
+
 ## Try it on a phone
 
 1. Upload all these files to any HTTPS static host (your own domain, GitHub Pages, Netlify).
