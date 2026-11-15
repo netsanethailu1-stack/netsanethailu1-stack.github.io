@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B5D3B">
+<title>Mahiber: Share, Equb and Iddir</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icon-apple-180.png">
+<style>
+:root{--g:#0B5D3B;--gd:#084A2F;--gl:#E3F1E8;--bg:#F4F6F3;--ink:#14201A;--mut:#55615A;--line:#DDE3DD;--amb:#F5B93A;--ambl:#FFF1CC;--ambd:#5E4200;--red:#8A1F11;--card:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Ethiopic","Noto Sans",sans-serif}
+#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:14px 16px 6px}
+header h1{margin:0;font-size:21px;font-weight:800;flex:1;min-width:0;overflow-wrap:anywhere}
+.brand{color:var(--g)} .logo{width:46px;height:46px;flex:none;display:block} .sub{font-size:13px;color:var(--mut);font-weight:400}
+main{flex:1;padding:8px 16px 96px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.hero{background:var(--g);color:#fff;border:0}
+.hero .big{font-size:30px;font-weight:800;line-height:1.1}
+.hero .soft{color:#EAF5EE;font-size:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.grow{flex:1;min-width:0}
+.mut{color:var(--mut);font-size:14px}
+.b{font-weight:700}
+h2{margin:6px 0 0;font-size:16px}
+a.btn{display:flex;align-items:center;justify-content:center;text-decoration:none}
+button,.btn{font:inherit;font-weight:700;min-height:46px;padding:0 16px;border-radius:12px;border:1.5px solid var(--g);background:transparent;color:var(--g);cursor:pointer}
+button.pri,a.btn.pri{background:var(--g);color:#fff}
+button.amb{background:var(--amb);border-color:var(--amb);color:var(--ink)}
+button.danger{border-color:var(--red);color:var(--red)}
+button.sm{min-height:44px;padding:0 12px;font-size:14px}
+button.icon{width:46px;padding:0;border-color:var(--line);color:var(--ink);background:#fff;display:flex;align-items:center;justify-content:center}
+button.link{border:0;padding:0 4px;min-height:44px}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
+.full{width:100%}
+.pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:700;white-space:nowrap}
+.p-ok{background:var(--gl);color:var(--g)} .p-no{background:#ECEFEC;color:#3C4740} .p-amb{background:var(--ambl);color:var(--ambd)}
+.list{padding:0;gap:0;overflow:hidden}
+.list>div{padding:10px 16px;border-bottom:1px solid #E8ECE8}
+.list>div:last-child{border-bottom:0}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tiles button{min-height:64px;padding:6px;font-size:14px}
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;background:#E4E9E4;border-radius:12px;padding:4px}
+.tabs button{border:0;min-height:44px;color:var(--ink)}
+.tabs button[aria-pressed=true]{background:#fff;color:var(--g)}
+.bar{height:8px;border-radius:4px;background:#2E7A58;overflow:hidden}
+.bar>i{display:block;height:8px;background:var(--amb)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line)}
+nav>div{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:4px 8px 8px}
+nav button{border:0;min-height:52px;color:var(--mut);font-size:13px}
+nav button[aria-current=page]{color:var(--g)}
+label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:14px}
+input,select,textarea{font:inherit;min-height:46px;padding:8px 12px;border-radius:10px;border:1px solid #8E9A92;background:#fff;color:var(--ink);width:100%}
+textarea{min-height:110px;resize:vertical}
+.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.checks label{flex-direction:row;align-items:center;gap:8px;font-weight:400;min-height:44px;font-size:15px}
+.checks input{width:20px;min-height:20px;height:20px;accent-color:var(--g)}
+#sheet{position:fixed;inset:0;background:rgba(20,32,26,.55);display:flex;align-items:flex-end;justify-content:center;z-index:5}
+#sheet[hidden]{display:none}
+#sheet form,#sheet .box{background:#fff;width:100%;max-width:480px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px 22px;display:flex;flex-direction:column;gap:12px}
+.err{color:var(--red);font-weight:600;font-size:14px}
+.note{background:var(--gl);color:#0A4B30;border-radius:10px;padding:10px 12px;font-size:14px}
+.warn{background:var(--ambl);color:var(--ambd);border-radius:10px;padding:10px 12px;font-size:14px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;overflow-wrap:anywhere}
+.crow{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:44px;font-weight:400;font-size:15px;width:100%;text-align:left;color:var(--ink)}
+.crow input{width:20px;min-height:20px;height:20px;accent-color:var(--g);flex:none}
+label.filebtn{flex-direction:row;align-items:center;justify-content:center;text-align:center;cursor:pointer;position:relative;border:1.5px solid var(--g);border-radius:12px;color:var(--g);font-weight:700;min-height:44px;padding:0 12px}
+label.filebtn input{position:absolute;inset:0;opacity:0;min-height:0;cursor:pointer}
+label.filebtn:focus-within{outline:3px solid var(--amb);outline-offset:2px}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:6}
+#toast[hidden]{display:none}
+@media (prefers-reduced-motion:no-preference){#sheet form,#sheet .box{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet" hidden></div>
+<div id="toast" role="status" hidden></div>
+
+<script id="core">
+/* Pure logic: no DOM. Tested separately. */
+const Core = (() => {
+  const enc = new TextEncoder();
+  const hex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+  const sha = async s => hex(await crypto.subtle.digest('SHA-256', enc.encode(s)));
+  const rnd = n => { const a = new Uint8Array(n); crypto.getRandomValues(a); return a; };
+  const uid = () => hex(rnd(8));
+  const toC = v => { const n = Number(String(v == null ? '' : v).replace(/,/g, '').trim()); return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : 0; };
+
+  function splitEqual(amountC, ids) {
+    const n = ids.length, base = Math.floor(amountC / n), r = amountC - base * n, o = {};
+    ids.forEach((id, i) => { o[id] = base + (i < r ? 1 : 0); });
+    return o;
+  }
+  function shareBalances(g) {
+    const b = {};
+    g.members.forEach(m => { b[m.id] = 0; });
+    for (const e of g.expenses) {
+      if (e.void) continue;
+      b[e.paidBy] += e.amountC;
+      const s = splitEqual(e.amountC, e.among);
+      for (const id in s) b[id] -= s[id];
+    }
+    for (const s of g.settlements) { b[s.from] += s.amountC; b[s.to] -= s.amountC; }
+    return b;
+  }
+  function settleUp(b) {
+    const d = [], c = [];
+    for (const id in b) { if (b[id] < 0) d.push([id, -b[id]]); else if (b[id] > 0) c.push([id, b[id]]); }
+    d.sort((x, y) => y[1] - x[1]); c.sort((x, y) => y[1] - x[1]);
+    const out = []; let i = 0, j = 0;
+    while (i < d.length && j < c.length) {
+      const a = Math.min(d[i][1], c[j][1]);
+      out.push({ from: d[i][0], to: c[j][0], amountC: a });
+      d[i][1] -= a; c[j][1] -= a;
+      if (!d[i][1]) i++;
+      if (!c[j][1]) j++;
+    }
+    return out;
+  }
+
+  const newSeed = () => hex(rnd(32));
+  /* mix is the members' number, chosen after the sealed code was sent. Old draws have none. */
+  async function pickIndex(seed, round, n, mix) {
+    const h = await sha(seed + '|' + round + (mix == null ? '' : '|' + mix));
+    return Number(BigInt('0x' + h) % BigInt(n));
+  }
+
+  /* The ledger is the only record. Each entry is an event {type, gid, data}; groups are rebuilt
+     by replaying it, so changing any figure breaks the hash chain. Entries from before this
+     format have `text` instead of `data` and keep their original hash. */
+  const entryHash = (prev, e) => sha(prev + '|' + JSON.stringify([e.i, e.at, e.type, e.gid, e.data === undefined ? e.text : e.data]));
+  async function appendLedger(st, type, gid, data) {
+    const prev = st.ledger.length ? st.ledger[st.ledger.length - 1].hash : 'genesis';
+    const e = { i: st.ledger.length + 1, at: new Date().toISOString(), type, gid, data, prev };
+    e.hash = await entryHash(prev, e);
+    st.ledger.push(e);
+    return e;
+  }
+  async function verifyLedger(st) {
+    let prev = 'genesis';
+    for (const e of st.ledger) {
+      if (e.prev !== prev || (await entryHash(prev, e)) !== e.hash) return e.i;
+      prev = e.hash;
+    }
+    return 0;
+  }
+
+  /* Gregorian date to Ethiopian calendar date. */
+  function ethDate(d) {
+    const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+    const a = Math.floor((14 - m) / 12), yy = y + 4800 - a, mm = m + 12 * a - 3;
+    const jdn = day + Math.floor((153 * mm + 2) / 5) + 365 * yy + Math.floor(yy / 4) - Math.floor(yy / 100) + Math.floor(yy / 400) - 32045;
+    const k = jdn - 1723856, r = k % 1461, n = r % 365 + 365 * Math.floor(r / 1460);
+    return { year: 4 * Math.floor(k / 1461) + Math.floor(r / 365) - Math.floor(r / 1460), month: Math.floor(n / 30) + 1, day: n % 30 + 1 };
+  }
+
+  const b64 = u => { let s = ''; for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s); };
+  const ub64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  async function deriveKey(pin, salt) {
+    const km = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+  async function seal(key, salt, obj) {
+    const iv = rnd(12);
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(JSON.stringify(obj)));
+    return { enc: true, salt: b64(salt), iv: b64(iv), ct: b64(new Uint8Array(ct)) };
+  }
+  async function unseal(pin, box) {
+    const salt = ub64(box.salt), key = await deriveKey(pin, salt);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub64(box.iv) }, key, ub64(box.ct));
+    return { key, salt, data: JSON.parse(new TextDecoder().decode(pt)) };
+  }
+  function qp(v) {
+    const bytes = []; v = v.replace(/=\r?\n/g, '');
+    for (let i = 0; i < v.length; i++) {
+      if (v[i] === '=' && /^[0-9A-Fa-f]{2}$/.test(v.substr(i + 1, 2))) { bytes.push(parseInt(v.substr(i + 1, 2), 16)); i += 2; }
+      else bytes.push(...enc.encode(v[i]));
+    }
+    return new TextDecoder().decode(new Uint8Array(bytes));
+  }
+  /* Contacts from a .vcf export: [{name, phone}], one entry per card with a number. */
+  function parseVcf(text) {
+    const out = [], seen = new Set();
+    const lines = String(text || '').replace(/=\r?\n(?=[^\r\n]*)/g, m => m).replace(/\r?\n[ \t]/g, '').split(/\r?\n/);
+    let cur = null, pend = '';
+    for (let raw of lines) {
+      if (pend) { raw = pend + raw; pend = ''; }
+      if (/ENCODING=QUOTED-PRINTABLE/i.test(raw) && /=$/.test(raw)) { pend = raw.slice(0, -1); continue; }
+      const up = raw.toUpperCase();
+      if (up.startsWith('BEGIN:VCARD')) { cur = { fn: '', n: '', tel: '' }; continue; }
+      if (!cur) continue;
+      if (up.startsWith('END:VCARD')) {
+        const name = (cur.fn || cur.n).trim().slice(0, 60), phone = cur.tel, k = phone || name.toLowerCase();
+        if (phone && !seen.has(k)) { seen.add(k); out.push({ name: name || phone, phone }); }
+        cur = null; continue;
+      }
+      const c = raw.indexOf(':'); if (c < 0) continue;
+      const head = raw.slice(0, c).toUpperCase(), key = head.split(';')[0].split('.').pop();
+      let val = raw.slice(c + 1); if (/QUOTED-PRINTABLE/.test(head)) val = qp(val);
+      if (key === 'FN') cur.fn = val.replace(/\\([,;])/g, '$1');
+      else if (key === 'N' && !cur.n) { const a = val.split(';'); cur.n = [a[1], a[0]].filter(Boolean).join(' ').replace(/\\([,;])/g, '$1'); }
+      else if (key === 'TEL' && !cur.tel) cur.tel = val.replace(/^tel:/i, '').replace(/[^\d+]/g, '').slice(0, 16);
+    }
+    return out;
+  }
+  /* v1: groups stored beside a text ledger. v2: the ledger of events is the record. */
+  function validState(s) {
+    if (!s || !Array.isArray(s.ledger)) return false;
+    if (s.v === 2) return true;
+    return s.v === 1 && Array.isArray(s.groups) &&
+      s.groups.every(g => g && typeof g.id === 'string' && ['share', 'equb', 'iddir'].includes(g.type) && Array.isArray(g.members));
+  }
+
+  /* Strict check for a backup from outside the app: every field has the type and format the app writes. */
+  const METHODS = ['Telebirr', 'CBE Birr', 'bank', 'cash'];
+  const isObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
+  const isId = x => typeof x === 'string' && /^[0-9a-f]{16}$/.test(x);
+  const h64 = x => typeof x === 'string' && /^[0-9a-f]{64}$/.test(x);
+  const str = (x, n) => typeof x === 'string' && x.length <= n;
+  const optStr = (x, n) => x == null || str(x, n);
+  const amt = x => Number.isSafeInteger(x) && x >= 0;
+  const time = x => typeof x === 'string' && x.length <= 40 && !isNaN(Date.parse(x));
+  const optTime = x => x == null || time(x);
+  const optBool = x => x == null || typeof x === 'boolean';
+  /* pub: a group rebuilt from a shared summary, where draw seeds are opened only after the draw. */
+  function validGroup(g, pub) {
+    if (!isObj(g) || !isId(g.id) || !str(g.name, 60) || !optTime(g.created) || !Array.isArray(g.members) || g.members.length > 500) return false;
+    if (!g.members.every(m => isObj(m) && isId(m.id) && str(m.name, 60) && optStr(m.phone, 20) && optBool(m.me))) return false;
+    const ids = new Set(g.members.map(m => m.id)), mem = x => ids.has(x);
+    if (ids.size !== g.members.length) return false;
+    if (g.type === 'share') {
+      return Array.isArray(g.expenses) && g.expenses.every(e => isObj(e) && isId(e.id) && str(e.what, 80) && amt(e.amountC) && mem(e.paidBy) &&
+          Array.isArray(e.among) && e.among.length > 0 && e.among.every(mem) && optTime(e.at) && optBool(e.void)) &&
+        Array.isArray(g.settlements) && g.settlements.every(s => isObj(s) && mem(s.from) && mem(s.to) && amt(s.amountC) &&
+          (s.method == null || METHODS.includes(s.method)) && optStr(s.ref, 40) && optTime(s.at)) &&
+        (g.requests == null || (isObj(g.requests) && Object.keys(g.requests).every(k => mem(k) && time(g.requests[k]))));
+    }
+    if (!amt(g.amountC) || !isObj(g.pay)) return false;
+    const payOk = re => Object.keys(g.pay).every(k => re.test(k) && isObj(g.pay[k]) && Object.keys(g.pay[k]).every(id => {
+      const p = g.pay[k][id]; return mem(id) && isObj(p) && METHODS.includes(p.method) && optStr(p.ref, 40) && optTime(p.at);
+    }));
+    if (g.type === 'equb') {
+      return payOk(/^r\d{1,3}$/) && ['daily', 'weekly', 'monthly'].includes(g.freq) && Number.isSafeInteger(g.round) &&
+        g.round >= 1 && g.round <= g.members.length && typeof g.done === 'boolean' && isObj(g.draws) &&
+        Object.keys(g.draws).every(r => {
+          const d = g.draws[r]; return /^\d{1,3}$/.test(r) && isObj(d) && (h64(d.seed) || (pub && d.seed == null)) && h64(d.commit) && optStr(d.mix, 40) &&
+            (d.winnerId == null || (mem(d.winnerId) && Array.isArray(d.eligible) && d.eligible.every(mem) && optTime(d.at)));
+        });
+    }
+    if (g.type === 'iddir') {
+      return payOk(/^E\d{4}-\d{2}$/) && Array.isArray(g.payouts) &&
+        g.payouts.every(o => isObj(o) && isId(o.id) && mem(o.memberId) && str(o.reason, 80) && amt(o.amountC) && time(o.at));
+    }
+    return false;
+  }
+  const PKEY = /^(r\d{1,3}|E\d{4}-\d{2})$/;
+  const copy = x => JSON.parse(JSON.stringify(x));
+  /* Apply one event to the groups. Events that do not fit the current state are ignored. */
+  function apply(gs, all, e) {
+    const d = e.data, at = e.at, gid = e.gid;
+    if (!isObj(d) || !isId(gid)) return;
+    if (e.type === 'create' || e.type === 'snapshot') {
+      if (all.has(gid)) return;
+      let g;
+      if (e.type === 'snapshot') {
+        g = copy(d.group);
+        if (!isObj(g) || g.id !== gid || !Array.isArray(g.members) || !g.members.every(m => isObj(m) && isId(m.id))) return;
+      } else {
+        if (!['share', 'equb', 'iddir'].includes(d.type) || !Array.isArray(d.members) || !d.members.every(m => isObj(m) && isId(m.id))) return;
+        g = { id: gid, type: d.type, name: d.name, created: at, members: copy(d.members) };
+        if (d.type === 'share') { g.expenses = []; g.settlements = []; g.requests = {}; }
+        else { g.amountC = d.amountC; g.pay = {}; if (d.type === 'equb') { g.freq = d.freq; g.round = 1; g.draws = {}; g.done = false; } else g.payouts = []; }
+      }
+      gs.set(gid, g); all.set(gid, g); return;
+    }
+    const g = gs.get(gid); if (!g) return;
+    const has = id => isId(id) && g.members.some(m => m.id === id);
+    switch (e.type) {
+      case 'expense':
+        if (g.expenses && isId(d.id) && has(d.paidBy) && Array.isArray(d.among) && d.among.length && d.among.every(has))
+          g.expenses.push({ id: d.id, what: d.what, amountC: d.amountC, paidBy: d.paidBy, among: d.among.slice(), at });
+        break;
+      case 'void': { const x = g.expenses && g.expenses.find(y => y.id === d.id); if (x) x.void = true; break; }
+      case 'settle':
+        if (g.settlements && has(d.from) && has(d.to)) {
+          g.settlements.push({ from: d.from, to: d.to, amountC: d.amountC, method: d.method, ref: d.ref, at });
+          if (g.requests) delete g.requests[d.from];
+        }
+        break;
+      case 'request': if (g.requests && has(d.from)) g.requests[d.from] = at; break;
+      case 'member': if (isId(d.id) && !has(d.id)) g.members.push({ id: d.id, name: d.name, phone: d.phone }); break;
+      case 'pay':
+        if (g.pay && PKEY.test(d.key) && has(d.mid)) { const p = g.pay[d.key] = g.pay[d.key] || {}; if (!p[d.mid]) p[d.mid] = { method: d.method, ref: d.ref, at }; }
+        break;
+      case 'undo': if (g.pay && PKEY.test(d.key) && g.pay[d.key] && has(d.mid)) delete g.pay[d.key][d.mid]; break;
+      case 'commit': if (g.draws && !g.done && d.round === g.round && !g.draws[d.round]) g.draws[d.round] = { seed: d.seed, commit: d.commit }; break;
+      case 'draw': {
+        const x = g.draws && d.round === g.round && g.draws[d.round];
+        if (x && !x.winnerId && has(d.winnerId) && Array.isArray(d.eligible) && d.eligible.every(has))
+          Object.assign(x, { mix: d.mix, winnerId: d.winnerId, eligible: d.eligible.slice(), at });
+        break;
+      }
+      case 'next':
+        if (g.type === 'equb' && !g.done && d.round === g.round && g.draws[g.round] && g.draws[g.round].winnerId) { if (g.round >= g.members.length) g.done = true; else g.round++; }
+        break;
+      case 'payout': if (g.payouts && isId(d.id) && has(d.memberId)) g.payouts.push({ id: d.id, memberId: d.memberId, reason: d.reason, amountC: d.amountC, at }); break;
+      case 'delete': gs.delete(gid); break;
+    }
+  }
+  /* Rebuild every group from the ledger. groups: newest first; all: also deleted ones (for history). */
+  function replay(ledger) {
+    const gs = new Map(), all = new Map();
+    for (const e of ledger) { if (isObj(e) && e.data !== undefined) { try { apply(gs, all, e); } catch (err) { /* malformed event: ignored */ } } }
+    return { groups: [...gs.values()].reverse(), all };
+  }
+  /* v1 to v2: old text entries stay as they are (their hashes still check), and one snapshot
+     event per group records its current state in the chain. */
+  async function migrate(s) {
+    if (s.v === 2) return s;
+    const out = { v: 2, lang: s.lang, me: s.me || {}, contacts: s.contacts || [], ledger: copy(s.ledger) };
+    for (const g of s.groups.slice().reverse()) await appendLedger(out, 'snapshot', g.id, { group: copy(g) });
+    return out;
+  }
+  /* A summary members can check. The organiser shares one group's own events, with phone numbers
+     and unopened draw seeds left out. A member's app rebuilds the group from those events, checks
+     every draw, and compares with the copy it kept last time, so an earlier entry cannot be changed
+     unnoticed. The fingerprint lets members compare by eye that they all got the same record. */
+  const PACK = 'MAHIBER1:';
+  function pubData(type, d) {
+    d = copy(d);
+    const strip = ms => { if (Array.isArray(ms)) ms.forEach(m => { if (isObj(m)) delete m.phone; }); };
+    if (type === 'create') strip(d.members);
+    if (type === 'member') delete d.phone;
+    if (type === 'commit') delete d.seed;
+    if (type === 'snapshot' && isObj(d.group)) {
+      strip(d.group.members);
+      if (isObj(d.group.draws)) for (const r in d.group.draws) if (isObj(d.group.draws[r])) delete d.group.draws[r].seed;
+    }
+    return d;
+  }
+  async function fingerprint(gid, ev) { let h = 'mahiber|' + gid; for (const x of ev) h = await sha(h + '|' + JSON.stringify(x)); return h; }
+  const b64u = u => b64(u).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const ub64u = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); return ub64(s + '==='.slice((s.length + 3) % 4)); };
+  async function zip(s) {
+    const u = enc.encode(s);
+    if (typeof CompressionStream === 'undefined') return 'j' + b64u(u);
+    return 'z' + b64u(new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()));
+  }
+  async function unzip(s) {
+    const u = ub64u(s.slice(1));
+    if (s[0] === 'j') return new TextDecoder().decode(u);
+    const rd = new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw')).getReader(), parts = [];
+    let n = 0;
+    for (;;) {
+      const { done, value } = await rd.read(); if (done) break;
+      n += value.length; if (n > 4e6) { rd.cancel(); throw new Error('too big'); } /* refuse a decompression bomb */
+      parts.push(value);
+    }
+    const out = new Uint8Array(n); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
+    return new TextDecoder().decode(out);
+  }
+  /* Returns {code, fp}: the text to paste into a message, and the full fingerprint. */
+  async function packGroup(ledger, gid, by) {
+    const ev = ledger.filter(e => e.gid === gid && e.data !== undefined).map(e => [e.at, e.type, pubData(e.type, e.data)]);
+    const g = replay(ledger).all.get(gid), seeds = {};
+    if (g && g.draws) for (const r in g.draws) if (g.draws[r].winnerId) seeds[r] = g.draws[r].seed; /* opened at the draw */
+    const fp = await fingerprint(gid, ev);
+    return { code: PACK + await zip(JSON.stringify({ gid, by: String(by || '').slice(0, 60), ev, seeds })), fp };
+  }
+  function validCopy(c) {
+    return isObj(c) && isId(c.gid) && optStr(c.by, 60) && Array.isArray(c.ev) && c.ev.length > 0 && c.ev.length <= 20000 &&
+      c.ev.every(x => Array.isArray(x) && x.length === 3 && time(x[0]) && str(x[1], 20) && isObj(x[2])) &&
+      isObj(c.seeds) && Object.keys(c.seeds).every(r => /^\d{1,3}$/.test(r) && h64(c.seeds[r]));
+  }
+  async function readPack(text) {
+    try {
+      const s = String(text || ''), i = s.indexOf(PACK); if (i < 0 || s.length > 3e6) return null;
+      const m = s.slice(i + PACK.length).match(/^[jz][A-Za-z0-9_-]+/); if (!m) return null;
+      const c = JSON.parse(await unzip(m[0]));
+      return validCopy(c) ? { gid: c.gid, by: c.by || '', ev: c.ev, seeds: c.seeds } : null;
+    } catch (e) { return null; }
+  }
+  /* Rebuild a shared group and compare it with the kept copy, if any.
+     status: new (no kept copy), same, more (only new entries after it), changed (entry `at` differs). */
+  async function openCopy(c, kept) {
+    const ledger = c.ev.map((x, i) => ({ i: i + 1, at: x[0], type: x[1], gid: c.gid, data: x[2] }));
+    const rp = replay(ledger), g = rp.all.get(c.gid);
+    if (!g || !validGroup(g, true)) return null;
+    const draws = {};
+    if (g.draws) for (const r in g.draws) {
+      const d = g.draws[r], s = c.seeds[r]; delete d.seed;
+      if (!d.winnerId) continue;
+      let ok = false;
+      if (s && d.eligible.length && (await sha(s)) === d.commit) ok = d.eligible[await pickIndex(s, Number(r), d.eligible.length, d.mix)] === d.winnerId;
+      draws[r] = ok; if (ok) d.seed = s;
+    }
+    let status = 'new', at = 0, added = c.ev.length;
+    if (kept) {
+      for (let i = 0; i < kept.ev.length; i++) if (i >= c.ev.length || JSON.stringify(kept.ev[i]) !== JSON.stringify(c.ev[i])) { at = i + 1; break; }
+      added = c.ev.length - kept.ev.length;
+      status = at ? 'changed' : added ? 'more' : 'same';
+    }
+    return { g, all: rp.all, ledger, deleted: !rp.groups.length, draws, fp: await fingerprint(c.gid, c.ev), status, at, added };
+  }
+  const validKept = k => validCopy(k) && time(k.at) && str(k.name, 60) && ['share', 'equb', 'iddir'].includes(k.type);
+
+  function validBackup(s) {
+    if (!isObj(s) || s.v !== 2 || !Array.isArray(s.ledger) || !(s.lang == null || s.lang === 'en' || s.lang === 'am')) return false;
+    if (s.kept != null && !(Array.isArray(s.kept) && s.kept.length <= 200 && s.kept.every(validKept))) return false;
+    const me = s.me == null ? {} : s.me;
+    if (!isObj(me) || !['name', 'telebirr', 'cbe', 'cbeName', 'bankName', 'bankAcct'].every(k => optStr(me[k], 60))) return false;
+    if (s.contacts != null && !(Array.isArray(s.contacts) && s.contacts.length <= 5000 && s.contacts.every(c => isObj(c) && str(c.name, 60) && str(c.phone, 16)))) return false;
+    if (!s.ledger.every((e, i) => isObj(e) && e.i === i + 1 && time(e.at) && str(e.type, 20) && str(e.gid, 40) &&
+      (e.data === undefined ? str(e.text, 2000) : isObj(e.data) && isId(e.gid)) && (e.prev === 'genesis' || h64(e.prev)) && h64(e.hash))) return false;
+    const all = replay(s.ledger).all, made = s.ledger.filter(e => e.data !== undefined && (e.type === 'create' || e.type === 'snapshot')).length;
+    return all.size === made && [...all.values()].every(validGroup); /* every group in the file must load */
+  }
+  return { sha, rnd, uid, toC, splitEqual, shareBalances, settleUp, newSeed, pickIndex, appendLedger, verifyLedger, replay, migrate, ethDate, deriveKey, seal, unseal, validState, validBackup, validGroup, parseVcf, packGroup, readPack, openCopy, fingerprint };
+})();
+if (typeof module !== 'undefined') module.exports = Core;
+</script>
+
+<script>
+(() => {
+'use strict';
+const T = {
+en: {
+ tagline:'Share, Equb and Iddir records', share:'Share', equb:'Equb', iddir:'Iddir', home:'Groups', history:'History', settings:'Settings',
+ newShare:'New share', newEqub:'New equb', newIddir:'New iddir', empty:'No groups yet. Start one below.',
+ shareHint:'Split a meal, a gift or a visit among friends', equbHint:'Rotating savings with a fair draw', iddirHint:'Monthly dues and support payouts',
+ name:'Name', titleEg:'Title, for example Sunday lunch', people:'People, one name per line', members:'Members, one name per line', membersN:'{0} members',
+ amountEach:'Contribution per member (birr)', freq:'How often', daily:'Daily', weekly:'Weekly', monthly:'Monthly',
+ create:'Create', cancel:'Cancel', save:'Save', back:'Back', birr:'birr', yes:'Yes', close:'Close',
+ needName:'Enter a name.', needTwo:'Add at least 2 names.', needAmount:'Enter an amount above zero.', needOne:'Choose at least one person.',
+ expenses:'Expenses', balances:'Balances', addExpense:'Add expense', what:'What was it for', amount:'Amount (birr)', paidBy:'Paid by', splitAmong:'Split among',
+ noExpenses:'No expenses yet.', total:'Total', getsBack:'gets back', owes:'owes', settled:'settled', whoPays:'Who pays whom', pays:'{0} pays {1}',
+ markPaid:'Mark paid', allSettled:'Everyone is settled.', copySummary:'Send summary to members', copied:'Copied', addPerson:'Add person', remove:'Remove', removedTag:'removed',
+ splitN:'split among {0}', round:'Round {0} of {1}', pot:'Pot this round', collects:'{0} collects this round', noDraw:'Draw not held yet',
+ prepDraw:'Prepare draw', sealed:'Sealed code', sealedHelp:'Send this code to the members before the draw. At the draw the members choose a number together, and the code and that number decide the winner. Afterwards anyone can check that nobody chose the winner.',
+ mixLabel:"Members' number", mixHelp:'Ask the members to choose any number together now, after they have the sealed code. It is mixed with the code, so the organiser cannot know or choose the winner in advance.', needMix:'Enter the number the members chose.',
+ copyCode:'Copy code', runDraw:'Run draw', checkDraw:'Check the draw', drawOk:'The draw is valid. The opened code matches the sealed code.', drawBad:'The draw does not match its sealed code.',
+ opened:'Opened code', paid:'Paid', notPaid:'Not paid', record:'Record', undo:'Undo', paidCount:'{0} of {1} paid',
+ method:'Method', cash:'Cash', bank:'Bank transfer', ref:'Transaction number', refNeed:'Enter the transaction number from the SMS.',
+ noHold:'Mahiber never holds money and never asks for your PIN. Pay the collector directly, then record it here.',
+ nextRound:'Close round and start the next', unpaidWarn:'{0} members have not paid this round. Close it anyway?', drawFirst:'Run the draw first.',
+ equbDone:'This equb is complete. Everyone has collected.', order:'Payout order', fund:'Fund balance', dues:'Dues for {0}', prev:'Previous month', next:'Next month',
+ payouts:'Support payouts', addPayout:'Record payout', toWhom:'Paid to', reason:'Reason', noPayouts:'No payouts yet.', addMember:'Add member',
+ verify:'Check the record', ledgerOk:'All {0} entries are intact.', ledgerBad:'Entry {0} was changed.', noHistory:'Nothing recorded yet.',
+ ledgerHelp:'Entries cannot be edited. A mistake is fixed with a new correction entry.',
+ language:'Language', security:'Security', pinOn:'App lock is on. Your records are encrypted on this phone.', pinOff:'App lock is off. Anyone who opens this phone can read your records.',
+ pinSet:'Set app PIN', pinNew:'New PIN, 6 digits or more', pinAgain:'Repeat PIN', pinMismatch:'PINs do not match or are too short.',
+ pinForget:'If you forget this PIN, your records cannot be recovered. Keep a backup.', pinRemove:'Turn off app lock', lockNow:'Lock now',
+ unlock:'Unlock', enterPin:'Enter your PIN', wrongPin:'Wrong PIN.', wait:'Too many tries. Wait {0} seconds.', noCrypto:'App lock needs a secure (https) page.',
+ backup:'Backup', exportB:'Export backup', importB:'Restore from backup', exportHelp:'Copy this text or save the file, and keep it somewhere safe. It is not encrypted. Turn on app lock to lock your backups with your PIN.',
+ exportEnc:'This backup is locked with your app PIN. You need the PIN to restore it.', backupPin:'Backup PIN (only for a locked backup)',
+ copy:'Copy', saveFile:'Save file', pasteBackup:'Paste backup text here', chooseFile:'Or choose a backup file', importWarn:'Restoring replaces everything now in the app.',
+ badBackup:'This is not a valid Mahiber backup.', restore:'Restore', wipe:'Delete all data', wipeAsk:'Type DELETE to erase every group and record on this phone.',
+ deleteGroup:'Delete this group', deleteAsk:'Delete {0}? Its entries stay in the history.',
+ volatile:'This browser is not saving data. Export a backup before you close the app.',
+ promise:'Mahiber will never ask for your Telebirr PIN, bank password or card number.', onDevice:'Your records stay on this phone. Nothing is sent to a server.',
+ voidAsk:'Remove this expense? It stays in the history as removed.', undoAsk:'Undo this payment? A correction is added to the history.',
+ L_created:'{0} created with {1} members', L_exp:'{0} paid {1} for {2}', L_void:'Expense removed: {0}, {1}', L_settle:'{0} paid {1} {2}',
+ L_pay:'Paid. {0}: {1}, {2}, {3}', L_undo:'Correction: payment by {0} for {1} undone', L_commit:'Draw prepared for round {0}. Sealed code {1}',
+ L_draw:"Round {0} draw: {1} collects. Members' number {3}. Opened code {2}", L_next:'Round {0} closed', L_payout:'Payout to {0}: {1}, {2}', L_member:'{0} joined {1}', L_delete:'{0} deleted',
+ me:'Me', myPay:'My payment details', myName:'Your name', telebirrNo:'Your Telebirr phone number', cbeNo:'Your CBE account number', cbeHolder:'Account holder name',
+ otherBank:'Other bank name (optional)', otherAcct:'Other bank account number', myPayHelp:'Friends pay you directly on these. Mahiber does not move the money.',
+ needPay:'Add your name and at least one way to be paid.', noPay:'No payment details yet.', totalOpt:'Total you paid (birr), optional', includeMe:'I am also sharing the cost',
+ peoplePhone:'People, one per line: name, phone', pick:'Pick from contacts', phone:'Phone number (optional)', request:'Request', requested:'Requested',
+ reqTitle:'Payment request for {0}', sendSms:'Send by SMS', shareVia:'Send with another app', needPerson:'Add at least 1 person.',
+ msgHello:'Hello {0}, your share for "{1}" is {2}.', msgPay:'Please pay {0} with whichever you prefer:', msgTele:'Telebirr: {0}', msgCbe:'CBE account: {0}', msgAfter:'After paying, send me the transaction number.',
+ L_req:'Payment request prepared for {0}: {1}', L_snapshot:'Records of {0} moved to the new history format',
+ sumTitle:'Summary for members', sumHelp:'Send this whole message to the members. Their copy of Mahiber can check it with "Check a summary". Phone numbers are left out, and a sealed draw code stays sealed until the draw.',
+ fpLine:'Record fingerprint: {0}', sumHow:'To check it: open Mahiber, choose "Check a summary" and paste this whole message.',
+ checkSum:'Check a summary', checkHelp:'Paste the whole summary message an organiser sent you. Your app rebuilds the figures from the record itself and checks every draw.',
+ pasteSum:'Summary message', check:'Check', badSum:'This is not a Mahiber summary, or part of it is missing. Paste the whole message.',
+ fromOthers:'Records from organisers', organiser:'from {0}', fingerprint:'Fingerprint', fpHelp:'Compare this with other members. If everyone sees the same fingerprint, everyone got the same record.',
+ sumNew:'First copy of this record. It is now kept on this phone, so the next summary is compared with it.', sumSame:'Same record as your kept copy. Nothing was added or changed.',
+ sumMore:'{0} new entries since your kept copy. Nothing earlier was changed.', sumChanged:'Warning: entry {0} of your kept copy was changed or removed in this summary. Ask the organiser why. Your kept copy was not replaced.',
+ sumKept:'Kept copy from {0}, {1} entries.', keepNew:'Keep this new copy instead', keepAsk:'Replace your kept copy with this one? Later summaries will be compared with the new one.',
+ removeCopy:'Remove this copy', removeCopyAsk:'Remove your kept copy of {0}?', okTag:'checked', badTag:'does not match',
+ welcome:'Welcome to Mahiber', welcomeHelp:'Enter your name to start. Your Telebirr and bank details are optional now; you need one of them only to send payment requests. Friends pay you directly on these.', needProfile:'Enter your name, phone number and a bank account.',
+ badPhone:'Enter a valid phone number.', start:'Start', contacts:'Contacts', search:'Search contacts', pickPhone:'Pick from phone', importVcf:'Import contacts file (.vcf)',
+ vcfHelp:"In your phone's Contacts app choose Export to file (.vcf), then select that file here. You only do this once.", imported:'{0} contacts added', noVcf:'No contacts with a number found in that file.',
+ months:['Meskerem','Tikimt','Hidar','Tahsas','Tir','Yekatit','Megabit','Miyazia','Ginbot','Sene','Hamle','Nehase']
+},
+am: {
+ tagline:'የሼር፣ የእቁብ እና የእድር መዝገብ', share:'ሼር', equb:'እቁብ', iddir:'እድር', home:'ቡድኖች', history:'ታሪክ', settings:'ቅንብሮች',
+ newShare:'አዲስ ሼር', newEqub:'አዲስ እቁብ', newIddir:'አዲስ እድር', empty:'እስካሁን ምንም ቡድን የለም። ከታች ይጀምሩ።',
+ shareHint:'የምግብ፣ የስጦታ ወይም የጥየቃ ወጪን ከጓደኞች ጋር ያካፍሉ', equbHint:'ፍትሃዊ እጣ ያለው የቁጠባ እቁብ', iddirHint:'ወርሃዊ መዋጮ እና የእርዳታ ክፍያ',
+ name:'ስም', titleEg:'ርዕስ፣ ለምሳሌ የእሁድ ምሳ', people:'ሰዎች፣ በአንድ መስመር አንድ ስም', members:'አባላት፣ በአንድ መስመር አንድ ስም', membersN:'{0} አባላት',
+ amountEach:'የአንድ አባል መዋጮ (ብር)', freq:'በየስንት ጊዜ', daily:'በየቀኑ', weekly:'በየሳምንቱ', monthly:'በየወሩ',
+ create:'ፍጠር', cancel:'ተው', save:'አስቀምጥ', back:'ተመለስ', birr:'ብር', yes:'አዎ', close:'ዝጋ',
+ needName:'ስም ያስገቡ።', needTwo:'ቢያንስ 2 ስም ያስገቡ።', needAmount:'ከዜሮ በላይ መጠን ያስገቡ።', needOne:'ቢያንስ አንድ ሰው ይምረጡ።',
+ expenses:'ወጪዎች', balances:'ሂሳብ', addExpense:'ወጪ ጨምር', what:'ለምን ነበር', amount:'መጠን (ብር)', paidBy:'የከፈለው', splitAmong:'የሚካፈሉት',
+ noExpenses:'እስካሁን ወጪ የለም።', total:'ጠቅላላ', getsBack:'ይቀበላል', owes:'ይከፍላል', settled:'ተስተካክሏል', whoPays:'ማን ለማን ይከፍላል', pays:'{0} ለ{1} ይከፍላል',
+ markPaid:'ተከፍሏል', allSettled:'ሁሉም ሂሳብ ተስተካክሏል።', copySummary:'ማጠቃለያ ለአባላት ላክ', copied:'ተቀድቷል', addPerson:'ሰው ጨምር', remove:'አስወግድ', removedTag:'ተወግዷል',
+ splitN:'ለ{0} ሰው ተካፍሏል', round:'ዙር {0} ከ{1}', pot:'የዚህ ዙር ገንዘብ', collects:'በዚህ ዙር {0} ይወስዳል', noDraw:'እጣ ገና አልወጣም',
+ prepDraw:'እጣ አዘጋጅ', sealed:'የታሸገ ኮድ', sealedHelp:'ከእጣው በፊት ይህን ኮድ ለአባላት ይላኩ። በእጣው ጊዜ አባላቱ በጋራ ቁጥር ይመርጣሉ፤ ኮዱ እና ቁጥሩ አሸናፊውን ይወስናሉ። ከዚያ አሸናፊውን ማንም እንዳልመረጠ ማንም ማረጋገጥ ይችላል።',
+ mixLabel:'የአባላት ቁጥር', mixHelp:'የታሸገውን ኮድ ከተቀበሉ በኋላ አባላቱ አሁን በጋራ ማንኛውንም ቁጥር እንዲመርጡ ይጠይቁ። ቁጥሩ ከኮዱ ጋር ስለሚቀላቀል አደራጁ አሸናፊውን አስቀድሞ ማወቅም ሆነ መምረጥ አይችልም።', needMix:'አባላቱ የመረጡትን ቁጥር ያስገቡ።',
+ copyCode:'ኮድ ቅዳ', runDraw:'እጣ አውጣ', checkDraw:'እጣውን አረጋግጥ', drawOk:'እጣው ትክክል ነው። የተከፈተው ኮድ ከታሸገው ኮድ ጋር ይመሳሰላል።', drawBad:'እጣው ከታሸገው ኮድ ጋር አይመሳሰልም።',
+ opened:'የተከፈተ ኮድ', paid:'ተከፍሏል', notPaid:'አልተከፈለም', record:'መዝግብ', undo:'መልስ', paidCount:'{0} ከ{1} ከፍለዋል',
+ method:'የክፍያ መንገድ', cash:'ጥሬ ገንዘብ', bank:'የባንክ ዝውውር', ref:'የግብይት ቁጥር', refNeed:'ከኤስኤምኤሱ የግብይት ቁጥሩን ያስገቡ።',
+ noHold:'ማህበር ገንዘብ አይይዝም፤ የሚስጥር ቁጥርዎንም አይጠይቅም። በቀጥታ ለሰብሳቢው ይክፈሉ፣ ከዚያ እዚህ ይመዝግቡ።',
+ nextRound:'ዙሩን ዝጋና ቀጣዩን ጀምር', unpaidWarn:'{0} አባላት በዚህ ዙር አልከፈሉም። ቢሆንም ይዘጋ?', drawFirst:'መጀመሪያ እጣውን ያውጡ።',
+ equbDone:'ይህ እቁብ ተጠናቋል። ሁሉም ወስደዋል።', order:'የመውሰጃ ቅደም ተከተል', fund:'የእድሩ ቀሪ ገንዘብ', dues:'የ{0} መዋጮ', prev:'ያለፈው ወር', next:'ቀጣዩ ወር',
+ payouts:'የእርዳታ ክፍያዎች', addPayout:'ክፍያ መዝግብ', toWhom:'የተከፈለው ለ', reason:'ምክንያት', noPayouts:'እስካሁን ክፍያ የለም።', addMember:'አባል ጨምር',
+ verify:'መዝገቡን አረጋግጥ', ledgerOk:'ሁሉም {0} ምዝገባዎች አልተነኩም።', ledgerBad:'ምዝገባ {0} ተቀይሯል።', noHistory:'እስካሁን ምንም አልተመዘገበም።',
+ ledgerHelp:'ምዝገባዎች አይስተካከሉም። ስህተት በአዲስ የእርማት ምዝገባ ይታረማል።',
+ language:'ቋንቋ', security:'ደህንነት', pinOn:'የመተግበሪያ ቁልፍ በርቷል። መዝገብዎ በዚህ ስልክ ላይ ተመስጥሯል።', pinOff:'የመተግበሪያ ቁልፍ ጠፍቷል። ይህን ስልክ የከፈተ ሰው መዝገብዎን ማንበብ ይችላል።',
+ pinSet:'የመተግበሪያ ፒን አዘጋጅ', pinNew:'አዲስ ፒን፣ 6 አሃዝ ወይም በላይ', pinAgain:'ፒኑን ይድገሙ', pinMismatch:'ፒኖቹ አይመሳሰሉም ወይም አጭር ናቸው።',
+ pinForget:'ይህን ፒን ከረሱ መዝገብዎን መመለስ አይቻልም። መጠባበቂያ ያስቀምጡ።', pinRemove:'የመተግበሪያ ቁልፍ አጥፋ', lockNow:'አሁን ቆልፍ',
+ unlock:'ክፈት', enterPin:'ፒንዎን ያስገቡ', wrongPin:'የተሳሳተ ፒን።', wait:'ብዙ ሙከራ። {0} ሰከንድ ይጠብቁ።', noCrypto:'የመተግበሪያ ቁልፍ ደህንነቱ የተጠበቀ (https) ገጽ ይፈልጋል።',
+ backup:'መጠባበቂያ', exportB:'መጠባበቂያ አውጣ', importB:'ከመጠባበቂያ መልስ', exportHelp:'ይህን ጽሑፍ ይቅዱ ወይም ፋይሉን ያስቀምጡ፤ በአስተማማኝ ቦታ ያኑሩት። አልተመሰጠረም። መጠባበቂያዎን በፒን ለመቆለፍ የመተግበሪያ ቁልፍን ያብሩ።',
+ exportEnc:'ይህ መጠባበቂያ በመተግበሪያ ፒንዎ ተቆልፏል። ለመመለስ ፒኑ ያስፈልግዎታል።', backupPin:'የመጠባበቂያ ፒን (ለተቆለፈ መጠባበቂያ ብቻ)',
+ copy:'ቅዳ', saveFile:'ፋይል አስቀምጥ', pasteBackup:'የመጠባበቂያ ጽሑፉን እዚህ ይለጥፉ', chooseFile:'ወይም የመጠባበቂያ ፋይል ይምረጡ', importWarn:'መመለስ አሁን በመተግበሪያው ያለውን ሁሉ ይተካል።',
+ badBackup:'ይህ ትክክለኛ የማህበር መጠባበቂያ አይደለም።', restore:'መልስ', wipe:'ሁሉንም መረጃ ሰርዝ', wipeAsk:'በዚህ ስልክ ያለውን ሁሉ ለማጥፋት DELETE ብለው ይጻፉ።',
+ deleteGroup:'ይህን ቡድን ሰርዝ', deleteAsk:'{0} ይሰረዝ? ምዝገባዎቹ በታሪክ ውስጥ ይቆያሉ።',
+ volatile:'ይህ ብሮውዘር መረጃ እያስቀመጠ አይደለም። ከመዝጋትዎ በፊት መጠባበቂያ ያውጡ።',
+ promise:'ማህበር የቴሌብር ፒንዎን፣ የባንክ የይለፍ ቃልዎን ወይም የካርድ ቁጥርዎን በፍጹም አይጠይቅም።', onDevice:'መዝገብዎ በዚህ ስልክ ላይ ብቻ ይቀመጣል። ወደ ሰርቨር ምንም አይላክም።',
+ voidAsk:'ይህ ወጪ ይወገድ? በታሪክ ውስጥ እንደተወገደ ይቆያል።', undoAsk:'ይህ ክፍያ ይመለስ? በታሪክ ውስጥ እርማት ይጨመራል።',
+ L_created:'{0} ከ{1} አባላት ጋር ተፈጠረ', L_exp:'{0} ለ{2} {1} ከፈለ', L_void:'ወጪ ተወገደ፦ {0}፣ {1}', L_settle:'{0} ለ{1} {2} ከፈለ',
+ L_pay:'ተከፍሏል። {0}፦ {1}፣ {2}፣ {3}', L_undo:'እርማት፦ የ{0} የ{1} ክፍያ ተመልሷል', L_commit:'ለዙር {0} እጣ ተዘጋጀ። የታሸገ ኮድ {1}',
+ L_draw:'የዙር {0} እጣ፦ {1} ይወስዳል። የአባላት ቁጥር {3}። የተከፈተ ኮድ {2}', L_next:'ዙር {0} ተዘጋ', L_payout:'ለ{0} ክፍያ፦ {1}፣ {2}', L_member:'{0} ወደ {1} ተቀላቀለ', L_delete:'{0} ተሰረዘ',
+ me:'እኔ', myPay:'የእኔ የክፍያ መረጃ', myName:'ስምዎ', telebirrNo:'የእርስዎ የቴሌብር ስልክ ቁጥር', cbeNo:'የእርስዎ የንግድ ባንክ ሂሳብ ቁጥር', cbeHolder:'የሂሳቡ ባለቤት ስም',
+ otherBank:'ሌላ ባንክ ስም (አማራጭ)', otherAcct:'የሌላ ባንክ ሂሳብ ቁጥር', myPayHelp:'ጓደኞችዎ በቀጥታ በእነዚህ ይከፍሉዎታል። ማህበር ገንዘቡን አያንቀሳቅስም።',
+ needPay:'ስምዎን እና ቢያንስ አንድ የክፍያ መንገድ ያስገቡ።', noPay:'የክፍያ መረጃ ገና አልገባም።', totalOpt:'እርስዎ የከፈሉት ጠቅላላ (ብር)፣ አማራጭ', includeMe:'እኔም ወጪውን እካፈላለሁ',
+ peoplePhone:'ሰዎች፣ በአንድ መስመር፦ ስም፣ ስልክ', pick:'ከስልክ አድራሻዎች ምረጥ', phone:'ስልክ ቁጥር (አማራጭ)', request:'ጠይቅ', requested:'ተጠይቋል',
+ reqTitle:'ለ{0} የክፍያ ጥያቄ', sendSms:'በኤስኤምኤስ ላክ', shareVia:'በሌላ መተግበሪያ ላክ', needPerson:'ቢያንስ 1 ሰው ያስገቡ።',
+ msgHello:'ሰላም {0}፣ ለ"{1}" የእርስዎ ድርሻ {2} ነው።', msgPay:'እባክዎ በመረጡት መንገድ ለ{0} ይክፈሉ፦', msgTele:'ቴሌብር፦ {0}', msgCbe:'የንግድ ባንክ ሂሳብ፦ {0}', msgAfter:'ከከፈሉ በኋላ የግብይት ቁጥሩን ይላኩልኝ።',
+ L_req:'ለ{0} የክፍያ ጥያቄ ተዘጋጀ፦ {1}', L_snapshot:'የ{0} መዝገብ ወደ አዲሱ የታሪክ አቀማመጥ ተዛውሯል',
+ sumTitle:'ለአባላት ማጠቃለያ', sumHelp:'ይህን መልእክት በሙሉ ለአባላት ይላኩ። የእነሱ ማህበር "ማጠቃለያ አረጋግጥ" በሚለው ሊያረጋግጠው ይችላል። ስልክ ቁጥሮች አይካተቱም፤ የታሸገ የእጣ ኮድ እስከ እጣው ድረስ እንደታሸገ ይቆያል።',
+ fpLine:'የመዝገቡ አሻራ፦ {0}', sumHow:'ለማረጋገጥ፦ ማህበርን ይክፈቱ፣ "ማጠቃለያ አረጋግጥ" ይምረጡ እና ይህን መልእክት በሙሉ ይለጥፉ።',
+ checkSum:'ማጠቃለያ አረጋግጥ', checkHelp:'አደራጁ የላከልዎትን የማጠቃለያ መልእክት በሙሉ ይለጥፉ። መተግበሪያዎ ቁጥሮቹን ከመዝገቡ ራሱ እንደገና ያሰላል፤ እያንዳንዱንም እጣ ያረጋግጣል።',
+ pasteSum:'የማጠቃለያ መልእክት', check:'አረጋግጥ', badSum:'ይህ የማህበር ማጠቃለያ አይደለም፣ ወይም ከፊሉ ጎድሏል። መልእክቱን በሙሉ ይለጥፉ።',
+ fromOthers:'ከአደራጆች የመጡ መዝገቦች', organiser:'ከ{0}', fingerprint:'አሻራ', fpHelp:'ይህን ከሌሎች አባላት ጋር ያነጻጽሩ። ሁሉም አንድ አይነት አሻራ ካዩ ሁሉም አንድ አይነት መዝገብ ደርሷቸዋል።',
+ sumNew:'የዚህ መዝገብ የመጀመሪያ ቅጂ ነው። አሁን በዚህ ስልክ ተቀምጧል፤ ቀጣዩ ማጠቃለያ ከእሱ ጋር ይነጻጸራል።', sumSame:'ከተቀመጠው ቅጂዎ ጋር አንድ ነው። ምንም አልተጨመረም ወይም አልተቀየረም።',
+ sumMore:'ከተቀመጠው ቅጂዎ በኋላ {0} አዲስ ምዝገባዎች። ቀደም ያለው ምንም አልተቀየረም።', sumChanged:'ማስጠንቀቂያ፦ የተቀመጠው ቅጂዎ ምዝገባ {0} በዚህ ማጠቃለያ ተቀይሯል ወይም ተወግዷል። አደራጁን ለምን እንደሆነ ይጠይቁ። የተቀመጠው ቅጂዎ አልተተካም።',
+ sumKept:'ከ{0} የተቀመጠ ቅጂ፣ {1} ምዝገባዎች።', keepNew:'በምትኩ ይህን አዲስ ቅጂ አስቀምጥ', keepAsk:'የተቀመጠው ቅጂዎ በዚህ ይተካ? ቀጣይ ማጠቃለያዎች ከአዲሱ ጋር ይነጻጸራሉ።',
+ removeCopy:'ይህን ቅጂ አስወግድ', removeCopyAsk:'የ{0} የተቀመጠ ቅጂዎ ይወገድ?', okTag:'ተረጋግጧል', badTag:'አይመሳሰልም',
+ welcome:'እንኳን ወደ ማህበር በደህና መጡ', welcomeHelp:'ለመጀመር ስምዎን ያስገቡ። የቴሌብር እና የባንክ መረጃ አሁን አማራጭ ነው፤ የክፍያ ጥያቄ ለመላክ ብቻ ከአንዱ ያስፈልጋል። ጓደኞችዎ በቀጥታ በእነዚህ ይከፍሉዎታል።', needProfile:'ስምዎን፣ ስልክ ቁጥርዎን እና የባንክ ሂሳብ ያስገቡ።',
+ badPhone:'ትክክለኛ ስልክ ቁጥር ያስገቡ።', start:'ጀምር', contacts:'አድራሻዎች', search:'አድራሻ ፈልግ', pickPhone:'ከስልክ ምረጥ', importVcf:'የአድራሻ ፋይል አስገባ (.vcf)',
+ vcfHelp:'በስልክዎ የአድራሻ መተግበሪያ "ወደ ፋይል ላክ (.vcf)" ይምረጡ፣ ከዚያ ፋይሉን እዚህ ይምረጡ። ይህን አንድ ጊዜ ብቻ ያደርጋሉ።', imported:'{0} አድራሻዎች ተጨምረዋል', noVcf:'በፋይሉ ውስጥ ቁጥር ያለው አድራሻ አልተገኘም።',
+ months:['መስከረም','ጥቅምት','ኅዳር','ታኅሣሥ','ጥር','የካቲት','መጋቢት','ሚያዝያ','ግንቦት','ሰኔ','ሐምሌ','ነሐሴ']
+}};
+const METHODS = ['Telebirr', 'CBE Birr', 'bank', 'cash'];
+
+/* S is what is saved: {v:2, lang, me, contacts, ledger, kept}. GROUPS and ALL are rebuilt from the ledger.
+   kept holds the last checked summary of each group someone else organises; it is not part of the ledger. */
+let lang = 'en', S = null, KEY = null, SALT = null, BOX = null, volatile = false, hiddenAt = 0, GROUPS = [], ALL = new Map();
+const ui = { view: 'home', gid: null, tab: 'exp', period: null, sheet: null, flash: '', chk: null };
+const LS = 'mahiber.v1';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const t = (k, ...a) => { let s = (T[lang][k] != null ? T[lang][k] : T.en[k]) || k; a.forEach((v, i) => { s = s.split('{' + i + '}').join(v); }); return s; };
+const fmt = c => (c / 100).toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' ' + t('birr');
+const mlabel = m => (m === 'bank' || m === 'cash') ? t(m) : m;
+const fresh = () => ({ v: 2, lang, me: {}, contacts: [], ledger: [], kept: [] });
+function derive() { const r = Core.replay(S.ledger); GROUPS = r.groups; ALL = r.all; }
+const ME = () => (S.me = S.me || {});
+const group = () => GROUPS.find(g => g.id === ui.gid);
+const mname = (g, id) => { const m = g.members.find(x => x.id === id); return m ? (m.me ? (ME().name || t('me')) : m.name) : '?'; };
+const meOf = g => g.members.find(m => m.me);
+const people = v => String(v || '').split('\n').map(x => x.trim()).filter(Boolean).slice(0, 500).map(line => {
+  const m = line.match(/^(.*?)[,;\s]+(\+?\d[\d\s-]{7,14})$/);
+  return m && m[1].trim() ? { name: m[1].trim().slice(0, 60), phone: m[2].replace(/[\s-]/g, '') } : { name: line.slice(0, 60), phone: '' };
+});
+const intl = p => { p = String(p || '').replace(/[\s-]/g, ''); return /^0\d{9}$/.test(p) ? '+251' + p.slice(1) : p; };
+const canPick = () => { try { return 'contacts' in navigator && typeof navigator.contacts.select === 'function' && window.top === window.self; } catch (e) { return false; } };
+/* Only a name is needed to use the app; a way to be paid is needed only for payment requests. */
+const meErr = (m, needPay) => !m.name ? 'needName' : m.telebirr && !/^\+?\d{9,13}$/.test(m.telebirr) ? 'badPhone'
+  : needPay && !(m.telebirr || m.cbe || (m.bankName && m.bankAcct)) ? 'needPay' : '';
+const readMe = f => ({ name: f.name.trim(), telebirr: f.telebirr.replace(/[\s-]/g, ''), cbe: f.cbe.replace(/\s/g, ''), cbeName: f.cbeName.trim(), bankName: f.bankName.trim(), bankAcct: f.bankAcct.replace(/\s/g, '') });
+const hasPay = () => !meErr(ME(), true);
+const cline = c => c.name + (c.phone && c.phone !== c.name ? ', ' + c.phone : '');
+function addContacts(list) {
+  const cs = S.contacts = S.contacts || [], seen = new Set(cs.map(c => c.phone || c.name.toLowerCase())); let n = 0;
+  for (const c of list) { const k = c.phone || c.name.toLowerCase(); if (!k || seen.has(k)) continue; seen.add(k); cs.push({ name: String(c.name).slice(0, 60), phone: String(c.phone || '').slice(0, 16) }); n++; }
+  cs.sort((a, b) => a.name.localeCompare(b.name)); if (cs.length > 5000) cs.length = 5000;
+  return n;
+}
+function snapForm() { const f = $('#sheet form'); if (!f || !ui.sheet) return; const o = {}; for (const [k, v] of new FormData(f).entries()) if (typeof v === 'string') o[k] = v; ui.sheet.vals = o; }
+function contactsPanel(multi) {
+  const cs = S.contacts || [];
+  return `<div class="card" style="padding:10px 12px"><div class="b">${t('contacts')}</div>
+    ${cs.length ? `<input id="csearch" type="search" placeholder="${t('search')}" aria-label="${t('search')}"><div id="clist" style="max-height:190px;overflow:auto">${cs.map((c, i) => { const q = esc((c.name + ' ' + c.phone).toLowerCase()), lab = `${esc(c.name)} <span class="mut">${esc(c.phone)}</span>`;
+      return multi ? `<label class="crow" data-q="${q}"><input type="checkbox" class="cpick" data-i="${i}"><span>${lab}</span></label>` : `<button type="button" class="crow link" data-q="${q}" data-act="use-contact" data-i="${i}"><span>${lab}</span></button>`; }).join('')}</div>` : `<div class="mut">${t('vcfHelp')}</div>`}
+    <div class="row">${canPick() ? `<button type="button" class="sm grow" data-act="pick" ${multi ? 'data-multi="1"' : ''}>${t('pickPhone')}</button>` : ''}<label class="filebtn grow">${t('importVcf')}<input type="file" id="vcffile" accept=".vcf,text/vcard,text/x-vcard"></label></div></div>`;
+}
+const meFields = m => `<label>${t('myName')}<input name="name" maxlength="60" value="${esc(m.name)}" required></label>
+        <label>${t('telebirrNo')}<input name="telebirr" inputmode="tel" maxlength="20" value="${esc(m.telebirr)}"></label>
+        <label>${t('cbeNo')}<input name="cbe" inputmode="numeric" maxlength="30" value="${esc(m.cbe)}"></label>
+        <label>${t('cbeHolder')}<input name="cbeName" maxlength="60" value="${esc(m.cbeName)}"></label>
+        <label>${t('otherBank')}<input name="bankName" maxlength="40" value="${esc(m.bankName)}"></label>
+        <label>${t('otherAcct')}<input name="bankAcct" inputmode="numeric" maxlength="30" value="${esc(m.bankAcct)}"></label>`;
+function vWelcome() {
+  return `<header><img class="logo" src="icon.svg" alt=""><h1 class="brand">Mahiber <span class="sub">ማህበር</span><br><span class="sub">${t('tagline')}</span></h1>
+    <button class="sm" data-act="lang" aria-label="${t('language')}">${lang === 'en' ? 'አማርኛ' : 'English'}</button></header><main>
+    <form class="card" data-form="welcome"><h2 style="margin:0;font-size:20px">${t('welcome')}</h2><div class="mut">${t('welcomeHelp')}</div>
+      ${meFields(ui.wvals || ME())}${ui.flash ? `<div class="err" role="alert">${esc(ui.flash)}</div>` : ''}<button class="pri full">${t('start')}</button></form>
+    <div class="note">${t('promise')}<br>${t('onDevice')}</div></main>`;
+}
+function reqMessage(g, from, amt) {
+  const m = ME(), L = [t('msgHello', mname(g, from), g.name, fmt(amt)), t('msgPay', m.name)];
+  if (m.telebirr) L.push('- ' + t('msgTele', m.telebirr));
+  if (m.cbe) L.push('- ' + t('msgCbe', m.cbe) + (m.cbeName ? ' (' + m.cbeName + ')' : ''));
+  if (m.bankName && m.bankAcct) L.push('- ' + m.bankName + ': ' + m.bankAcct);
+  L.push(t('msgAfter'));
+  return L.join('\n');
+}
+
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { volatile = true; return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { volatile = true; return false; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) { volatile = true; } }
+async function persist() {
+  S.lang = lang;
+  const box = KEY ? await Core.seal(KEY, SALT, S) : { enc: false, data: S };
+  lsSet(LS, JSON.stringify(box)); lsSet('mahiber.lang', lang);
+}
+/* Every change to a group is an event added to the ledger; the groups are then rebuilt from it. */
+async function emit(type, gid, data) { await Core.appendLedger(S, type, gid, data); derive(); }
+/* History text is written from the event in the current language. Old entries keep their saved text. */
+function evText(e, all = ALL, nm = mname) {
+  if (e.data === undefined) return String(e.text == null ? '' : e.text);
+  try {
+    const d = e.data, g = all.get(e.gid) || { members: [], name: '?' }, n = id => nm(g, id), how = () => mlabel(d.method) + (d.ref ? ' #' + d.ref : '');
+    switch (e.type) {
+      case 'create': return t('L_created', d.name, d.members.length);
+      case 'snapshot': return t('L_snapshot', d.group.name);
+      case 'expense': return t('L_exp', n(d.paidBy), fmt(d.amountC), d.what);
+      case 'void': { const x = (g.expenses || []).find(y => y.id === d.id) || {}; return t('L_void', x.what || '?', fmt(x.amountC || 0)); }
+      case 'settle': return t('L_settle', n(d.from), n(d.to), fmt(d.amountC)) + ' (' + how() + ')';
+      case 'request': return t('L_req', n(d.from), fmt(d.amountC));
+      case 'member': return t('L_member', d.name, g.name);
+      case 'pay': return t('L_pay', n(d.mid), fmt(g.amountC), how(), keyLabel(g, d.key));
+      case 'undo': return t('L_undo', n(d.mid), keyLabel(g, d.key));
+      case 'commit': return t('L_commit', d.round, d.commit);
+      case 'draw': return t('L_draw', d.round, n(d.winnerId), ((g.draws || {})[d.round] || {}).seed || '', d.mix);
+      case 'next': return t('L_next', d.round);
+      case 'payout': return t('L_payout', n(d.memberId), fmt(d.amountC), d.reason);
+      case 'delete': return t('L_delete', d.name);
+    }
+  } catch (err) { /* malformed entry: show its type */ }
+  return String(e.type);
+}
+async function commit() { await persist(); ui.sheet = null; render(); }
+
+function period() {
+  if (!ui.period) { const e = Core.ethDate(new Date()); ui.period = { y: e.year, m: Math.min(e.month, 12) }; }
+  return ui.period;
+}
+const pkey = p => 'E' + p.y + '-' + String(p.m).padStart(2, '0');
+const plabel = p => t('months')[p.m - 1] + ' ' + p.y;
+const pays = (g, key) => (g.pay[key] = g.pay[key] || {});
+const iddirFund = g => {
+  let c = 0; for (const k in g.pay) c += Object.keys(g.pay[k]).length * g.amountC;
+  return c - g.payouts.reduce((s, p) => s + p.amountC, 0);
+};
+const equbWinners = g => Object.keys(g.draws).map(r => g.draws[r].winnerId).filter(Boolean);
+const shortFp = fp => fp.slice(0, 16).match(/.{4}/g).join(' ');
+/* Plain-text summary of a group. nm names a member: the organiser's own app or a member's checked copy. */
+function summaryLines(g, nm) {
+  const L = [g.name + ' · ' + t(g.type)], n = g.members.length, unpaid = p => g.members.filter(m => !p[m.id]).map(m => nm(g, m.id));
+  if (g.type === 'share') {
+    const plan = Core.settleUp(Core.shareBalances(g)), live = g.expenses.filter(e => !e.void);
+    L.push(t('total') + ': ' + fmt(live.reduce((s, e) => s + e.amountC, 0)), '');
+    live.forEach(e => L.push('- ' + e.what + ': ' + fmt(e.amountC) + ' (' + nm(g, e.paidBy) + ')'));
+    L.push('', t('whoPays') + ':');
+    if (plan.length) plan.forEach(p => L.push('- ' + t('pays', nm(g, p.from), nm(g, p.to)) + ': ' + fmt(p.amountC))); else L.push(t('allSettled'));
+  } else if (g.type === 'equb') {
+    const p = g.pay['r' + g.round] || {}, d = g.draws[g.round] || {};
+    L.push(t('round', g.round, n) + ' · ' + fmt(g.amountC) + ' ' + t(g.freq).toLowerCase());
+    if (g.done) L.push(t('equbDone'));
+    else {
+      const un = unpaid(p); L.push(t('paidCount', Object.keys(p).length, n) + (un.length ? '. ' + t('notPaid') + ': ' + un.join(', ') : ''));
+      if (d.winnerId) L.push(t('collects', nm(g, d.winnerId))); else if (d.commit) L.push(t('sealed') + ': ' + d.commit);
+    }
+    const order = Object.keys(g.draws).map(Number).sort((a, b) => a - b).filter(r => g.draws[r].winnerId);
+    if (order.length) { L.push('', t('order') + ':'); order.forEach(r => L.push(r + '. ' + nm(g, g.draws[r].winnerId))); }
+  } else {
+    const pr = period(), p = g.pay[pkey(pr)] || {}, un = unpaid(p);
+    L.push(t('fund') + ': ' + fmt(iddirFund(g)), t('dues', plabel(pr)) + ': ' + t('paidCount', Object.keys(p).length, n) + (un.length ? '. ' + t('notPaid') + ': ' + un.join(', ') : ''));
+    if (g.payouts.length) { L.push('', t('payouts') + ':'); g.payouts.forEach(o => L.push('- ' + nm(g, o.memberId) + ': ' + fmt(o.amountC) + ', ' + o.reason + ' (' + String(o.at).slice(0, 10) + ')')); }
+  }
+  return L;
+}
+
+/* ---------- views ---------- */
+const ICON_BACK = '<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>';
+const typePill = g => `<span class="pill ${g.type === 'iddir' ? 'p-amb' : g.type === 'equb' ? 'p-ok' : 'p-no'}">${t(g.type)}</span>`;
+const head = (title, sub) => `<header><button class="icon" data-act="go" data-view="home" aria-label="${t('back')}">${ICON_BACK}</button><h1>${esc(title)}${sub ? `<br><span class="sub">${sub}</span>` : ''}</h1></header>`;
+const navBar = () => `<nav aria-label="Main"><div>${[['home', 'home'], ['history', 'history'], ['settings', 'settings']].map(([v, k]) =>
+  `<button data-act="go" data-view="${v}" ${ui.view === v ? 'aria-current="page"' : ''}>${t(k)}</button>`).join('')}</div></nav>`;
+
+function vLock() {
+  return `<header><img class="logo" src="icon.svg" alt=""><h1 class="brand">Mahiber <span class="sub">ማህበር</span></h1></header><main>
+  <form class="card" data-form="unlock"><label>${t('enterPin')}<input name="pin" type="password" inputmode="numeric" autocomplete="off" required autofocus></label>
+  ${ui.flash ? `<div class="err" role="alert">${esc(ui.flash)}</div>` : ''}<button class="pri full">${t('unlock')}</button></form>
+  <div class="note">${t('promise')}</div></main>`;
+}
+function vHome() {
+  const cards = GROUPS.map(g => {
+    let line;
+    if (g.type === 'share') line = `${t('total')} ${fmt(g.expenses.filter(e => !e.void).reduce((s, e) => s + e.amountC, 0))} · ${t('membersN', g.members.length)}`;
+    else if (g.type === 'equb') line = `${esc(t('round', g.round, g.members.length))} · ${fmt(g.amountC)} ${esc(t(g.freq).toLowerCase())}`;
+    else line = `${t('fund')} ${fmt(iddirFund(g))} · ${t('membersN', g.members.length)}`;
+    return `<button class="card" style="text-align:left;min-height:0;font-weight:400;color:inherit;border-color:var(--line);background:#fff;padding:14px 16px" data-act="open" data-id="${esc(g.id)}">
+      <span class="row"><span class="b" style="font-size:17px;overflow-wrap:anywhere">${esc(g.name)}</span>${typePill(g)}</span><span class="mut">${line}</span></button>`;
+  }).join('');
+  return `<header><img class="logo" src="icon.svg" alt=""><h1 class="brand">Mahiber <span class="sub">ማህበር</span><br><span class="sub">${t('tagline')}</span></h1>
+    <button class="sm" data-act="lang" aria-label="${t('language')}">${lang === 'en' ? 'አማርኛ' : 'English'}</button></header><main>
+    ${volatile ? `<div class="warn" role="alert">${t('volatile')}</div>` : ''}
+    ${cards || `<div class="card mut">${t('empty')}</div>`}
+    <div class="tiles">${['share', 'equb', 'iddir'].map(k => `<button class="${k === 'share' ? 'pri' : ''}" data-act="new" data-type="${k}">+ ${t(k)}</button>`).join('')}</div>
+    <div class="mut">${t('share')}: ${t('shareHint')}.<br>${t('equb')}: ${t('equbHint')}.<br>${t('iddir')}: ${t('iddirHint')}.</div>
+    ${(S.kept || []).length ? `<h2>${t('fromOthers')}</h2>${S.kept.map(k => `<button class="card" style="text-align:left;min-height:0;font-weight:400;color:inherit;border-color:var(--line);background:#fff;padding:14px 16px" data-act="open-kept" data-id="${esc(k.gid)}">
+      <span class="row"><span class="b" style="font-size:17px;overflow-wrap:anywhere">${esc(k.name)}</span>${typePill(k)}</span><span class="mut">${k.by ? esc(t('organiser', k.by)) + ' · ' : ''}${esc(new Date(k.at).toLocaleDateString())}</span></button>`).join('')}` : ''}
+    <button class="full" data-act="sheet" data-kind="check">${t('checkSum')}</button>
+    <div class="note">${t('onDevice')}</div></main>${navBar()}`;
+}
+/* A member's view of a summary someone else sent: read-only, rebuilt from the shared events. */
+function vChecked() {
+  const { c, r } = ui.chk, g = r.g, nm = (g2, id) => { const m = g2.members.find(x => x.id === id); return m ? (m.me && c.by ? c.by : m.name) : '?'; };
+  const st = { new: ['note', t('sumNew')], same: ['note', t('sumSame')], more: ['note', t('sumMore', r.added)], changed: ['warn', t('sumChanged', r.at)] }[r.status]
+    || ['note', t('sumKept', new Date(c.at).toLocaleString(), c.ev.length)];
+  const draws = Object.keys(r.draws).map(Number).sort((a, b) => a - b).map(k => `<div class="row"><span class="pill p-ok">${k}</span><span class="grow b">${esc(nm(g, g.draws[k].winnerId))}</span>
+    <span class="pill ${r.draws[k] ? 'p-ok' : 'p-amb'}">${r.draws[k] ? t('okTag') : t('badTag')}</span></div>`).join('');
+  const hist = r.ledger.slice().reverse().slice(0, 300).map(e => `<div><div>${esc(evText(e, r.all, nm))}</div><div class="mut">#${esc(e.i)} · ${esc(new Date(e.at).toLocaleString())}</div></div>`).join('');
+  return `${head(g.name, t(g.type) + (c.by ? ' · ' + esc(t('organiser', c.by)) : ''))}<main>
+    <div class="${st[0]} b" role="status">${esc(st[1])}</div>
+    ${r.status === 'changed' ? `<button class="danger full" data-act="ask-keep-new">${t('keepNew')}</button>` : ''}
+    <div class="card"><div class="b">${t('fingerprint')}</div><div class="mono">${esc(shortFp(r.fp))}</div><div class="mut">${t('fpHelp')}</div></div>
+    ${r.deleted ? `<div class="warn">${esc(t('L_delete', g.name))}</div>` : ''}
+    <div class="card" style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(summaryLines(g, nm).join('\n'))}</div>
+    ${draws ? `<h2>${t('checkDraw')}</h2><div class="card list">${draws}</div>` : ''}
+    <h2>${t('history')}</h2><div class="card list">${hist}</div>
+    ${r.status === 'changed' ? '' : `<button class="danger full" data-act="ask-drop-kept" style="margin-top:12px">${t('removeCopy')}</button>`}</main>${navBar()}`;
+}
+function vShare(g) {
+  const bal = Core.shareBalances(g), tabs = `<div class="tabs"><button data-act="tab" data-tab="exp" aria-pressed="${ui.tab !== 'bal'}">${t('expenses')}</button><button data-act="tab" data-tab="bal" aria-pressed="${ui.tab === 'bal'}">${t('balances')}</button></div>`;
+  const total = g.expenses.filter(e => !e.void).reduce((s, e) => s + e.amountC, 0);
+  let body;
+  if (ui.tab !== 'bal') {
+    const rows = g.expenses.slice().reverse().map(e => `<div class="row"><div class="grow"><div class="b" style="${e.void ? 'text-decoration:line-through' : ''}">${esc(e.what)}</div>
+      <div class="mut">${esc(mname(g, e.paidBy))} · ${t('splitN', e.among.length)}${e.void ? ' · ' + t('removedTag') : ''}</div></div>
+      <div class="b">${fmt(e.amountC)}</div>${e.void ? '' : `<button class="sm link" data-act="ask-void" data-id="${esc(e.id)}">${t('remove')}</button>`}</div>`).join('');
+    body = `<button class="pri full" data-act="sheet" data-kind="expense">${t('addExpense')}</button>
+      ${rows ? `<div class="card list">${rows}</div>` : `<div class="card mut">${t('noExpenses')}</div>`}`;
+  } else {
+    const plan = Core.settleUp(bal), me = meOf(g);
+    body = `<div class="card list">${g.members.map(m => { const b = bal[m.id]; return `<div class="row"><span class="b grow">${esc(mname(g, m.id))}</span>
+        <span class="pill ${b > 0 ? 'p-ok' : b < 0 ? 'p-amb' : 'p-no'}">${b > 0 ? t('getsBack') + ' ' + fmt(b) : b < 0 ? t('owes') + ' ' + fmt(-b) : t('settled')}</span></div>`; }).join('')}</div>
+      <h2>${t('whoPays')}</h2>
+      ${plan.length ? `<div class="card list">${plan.map(p => { const toMe = me && p.to === me.id, rq = g.requests && g.requests[p.from]; return `<div><div class="row"><div class="grow">${t('pays', '<b>' + esc(mname(g, p.from)) + '</b>', '<b>' + esc(mname(g, p.to)) + '</b>')}<div class="b">${fmt(p.amountC)}</div></div>${rq ? `<span class="pill p-amb">${t('requested')}</span>` : ''}</div>
+        <div class="row" style="margin-top:8px">${toMe ? `<button class="sm grow amb" data-act="request" data-from="${esc(p.from)}" data-amt="${esc(p.amountC)}">${t('request')}</button>` : ''}<button class="sm grow" data-act="sheet" data-kind="settle" data-from="${esc(p.from)}" data-to="${esc(p.to)}" data-amt="${esc(p.amountC)}">${t('markPaid')}</button></div></div>`; }).join('')}</div>` : `<div class="card mut">${t('allSettled')}</div>`}
+      <button class="full" data-act="sheet" data-kind="person">${t('addPerson')}</button>`;
+  }
+  return `${head(g.name, t('share') + ' · ' + t('membersN', g.members.length))}<main>
+    <div class="card hero"><span class="soft">${t('total')}</span><span class="big">${fmt(total)}</span></div>${tabs}${body}${delBtn()}</main>${navBar()}`;
+}
+const delBtn = () => `<button class="full" data-act="send-summary" style="margin-top:12px">${t('copySummary')}</button><button class="danger full" data-act="ask-delete" style="margin-top:12px">${t('deleteGroup')}</button>`;
+function memberRows(g, key) {
+  const p = pays(g, key);
+  return `<div class="card list">${g.members.map(m => { const x = p[m.id]; return `<div class="row"><div class="grow"><div class="b">${esc(m.name)}</div>
+    <div class="mut">${x ? esc(mlabel(x.method)) + (x.ref ? ' · ' + esc(x.ref) : '') : t('notPaid')}</div></div>
+    ${x ? `<span class="pill p-ok">${t('paid')}</span><button class="sm link" data-act="ask-undo" data-mid="${esc(m.id)}" data-key="${esc(key)}">${t('undo')}</button>`
+        : `<button class="sm pri" data-act="sheet" data-kind="pay" data-mid="${esc(m.id)}" data-key="${esc(key)}">${t('record')}</button>`}</div>`; }).join('')}</div>`;
+}
+function vEqub(g) {
+  const n = g.members.length, key = 'r' + g.round, paidN = Object.keys(pays(g, key)).length, d = g.draws[g.round] || {};
+  const order = Object.keys(g.draws).map(Number).sort((a, b) => a - b).filter(r => g.draws[r].winnerId)
+    .map(r => `<div class="row"><span class="pill ${r === g.round && !g.done ? 'p-amb' : 'p-ok'}">${r}</span><span class="grow b">${esc(mname(g, g.draws[r].winnerId))}</span>
+      <button class="sm link" data-act="check-draw" data-round="${r}">${t('checkDraw')}</button></div>`).join('');
+  let draw = '';
+  if (!g.done) {
+    if (d.winnerId) draw = '';
+    else if (d.commit) draw = `<div class="card"><div class="b">${t('sealed')}</div><div class="mono">${esc(d.commit)}</div><div class="mut">${t('sealedHelp')}</div>
+      <div class="row"><button class="grow" data-act="copy" data-text="${esc(t('sealed') + ': ' + d.commit)}">${t('copyCode')}</button><button class="amb grow" data-act="sheet" data-kind="draw">${t('runDraw')}</button></div></div>`;
+    else draw = `<button class="amb full" data-act="prep-draw">${t('prepDraw')}</button>`;
+  }
+  return `${head(g.name, t('equb') + ' · ' + fmt(g.amountC) + ' ' + esc(t(g.freq).toLowerCase()))}<main>
+    <div class="card hero"><div class="row"><span class="soft">${t('pot')}</span><span class="pill" style="background:#fff;color:var(--g)">${esc(t('round', g.round, n))}</span></div>
+      <span class="big">${fmt(g.amountC * n)}</span><span class="soft">${g.done ? t('equbDone') : d.winnerId ? t('collects', esc(mname(g, d.winnerId))) : t('noDraw')}</span>
+      <div class="bar"><i style="width:${Math.round(paidN / n * 100)}%"></i></div><span class="soft">${t('paidCount', paidN, n)}</span></div>
+    ${draw}
+    ${ui.flash ? `<div class="warn" role="alert">${esc(ui.flash)}</div>` : ''}
+    <div class="note">${t('noHold')}</div>
+    ${memberRows(g, key)}
+    ${g.done ? '' : `<button class="pri full" data-act="ask-next">${t('nextRound')}</button>`}
+    ${order ? `<h2>${t('order')}</h2><div class="card list">${order}</div>` : ''}${delBtn()}</main>${navBar()}`;
+}
+function vIddir(g) {
+  const p = period(), key = pkey(p), paidN = Object.keys(pays(g, key)).length, n = g.members.length;
+  const outs = g.payouts.slice().reverse().map(o => `<div class="row"><div class="grow"><div class="b">${esc(mname(g, o.memberId))}</div><div class="mut">${esc(o.reason)} · ${esc(String(o.at).slice(0, 10))}</div></div><div class="b">${fmt(o.amountC)}</div></div>`).join('');
+  return `${head(g.name, t('iddir') + ' · ' + fmt(g.amountC) + ' ' + t('monthly').toLowerCase())}<main>
+    <div class="card hero"><span class="soft">${t('fund')}</span><span class="big">${fmt(iddirFund(g))}</span><span class="soft">${t('membersN', n)}</span></div>
+    <div class="row"><button class="icon" data-act="month" data-d="-1" aria-label="${t('prev')}">${ICON_BACK}</button>
+      <div style="text-align:center"><div class="b">${t('dues', plabel(p))}</div><div class="mut">${t('paidCount', paidN, n)}</div></div>
+      <button class="icon" data-act="month" data-d="1" aria-label="${t('next')}"><span style="display:flex;transform:scaleX(-1)">${ICON_BACK}</span></button></div>
+    <div class="note">${t('noHold')}</div>
+    ${memberRows(g, key)}
+    <button class="full" data-act="sheet" data-kind="person">${t('addMember')}</button>
+    <h2>${t('payouts')}</h2>${outs ? `<div class="card list">${outs}</div>` : `<div class="card mut">${t('noPayouts')}</div>`}
+    <button class="pri full" data-act="sheet" data-kind="payout">${t('addPayout')}</button>${delBtn()}</main>${navBar()}`;
+}
+function vHistory() {
+  const rows = S.ledger.slice().reverse().slice(0, 300).map(e => `<div><div>${esc(evText(e))}</div><div class="mut">#${esc(e.i)} · ${esc(new Date(e.at).toLocaleString())}</div></div>`).join('');
+  return `<header><h1>${t('history')}</h1></header><main><div class="mut">${t('ledgerHelp')}</div>
+    <button class="full" data-act="verify">${t('verify')}</button>${ui.flash ? `<div class="note" role="status">${esc(ui.flash)}</div>` : ''}
+    ${rows ? `<div class="card list">${rows}</div>` : `<div class="card mut">${t('noHistory')}</div>`}</main>${navBar()}`;
+}
+function vSettings() {
+  return `<header><h1>${t('settings')}</h1></header><main>
+    <div class="card hero"><span class="b">${t('promise')}</span><span class="soft">${t('onDevice')}</span></div>
+    <div class="card"><div class="b">${t('language')}</div><div class="row"><button class="grow ${lang === 'en' ? 'pri' : ''}" data-act="setlang" data-l="en">English</button><button class="grow ${lang === 'am' ? 'pri' : ''}" data-act="setlang" data-l="am">አማርኛ</button></div></div>
+    <div class="card"><div class="b">${t('myPay')}</div><div class="mut">${t('myPayHelp')}</div>
+      ${hasPay() ? `<div>${esc(ME().name)}${ME().telebirr ? '<br>' + esc(t('msgTele', ME().telebirr)) : ''}${ME().cbe ? '<br>' + esc(t('msgCbe', ME().cbe)) : ''}${ME().bankName && ME().bankAcct ? '<br>' + esc(ME().bankName + ': ' + ME().bankAcct) : ''}</div>` : `<div class="warn">${t('noPay')}</div>`}
+      <button data-act="sheet" data-kind="me">${t('myPay')}</button></div>
+    <div class="card"><div class="b">${t('security')}</div><div class="${KEY ? 'note' : 'warn'}">${KEY ? t('pinOn') : t('pinOff')}</div>
+      <button data-act="sheet" data-kind="pin">${t('pinSet')}</button>
+      ${KEY ? `<div class="row"><button class="grow" data-act="lock">${t('lockNow')}</button><button class="grow danger" data-act="pin-off">${t('pinRemove')}</button></div>` : ''}</div>
+    <div class="card"><div class="b">${t('backup')}</div><button data-act="export">${t('exportB')}</button><button data-act="sheet" data-kind="import">${t('importB')}</button></div>
+    <button class="danger full" data-act="sheet" data-kind="wipe">${t('wipe')}</button></main>${navBar()}`;
+}
+
+/* ---------- sheets ---------- */
+const err = () => ui.sheet && ui.sheet.err ? `<div class="err" role="alert">${esc(ui.sheet.err)}</div>` : '';
+const btns = (ok, cls) => `<div class="row"><button type="button" class="grow" data-act="close">${t('cancel')}</button><button class="grow ${cls || 'pri'}">${ok}</button></div>`;
+function sheetHtml() {
+  const s = ui.sheet, g = ui.gid ? group() : null, v = s.vals || {};
+  const opts = (sel) => g.members.map(m => `<option value="${esc(m.id)}" ${sel === m.id ? 'selected' : ''}>${esc(mname(g, m.id))}</option>`).join('');
+  switch (s.kind) {
+    case 'new': {
+      const ty = s.type, money = ty !== 'share';
+      return `<form data-form="new"><h2>${t(ty === 'share' ? 'newShare' : ty === 'equb' ? 'newEqub' : 'newIddir')}</h2>
+        <label>${ty === 'share' ? t('titleEg') : t('name')}<input name="name" maxlength="60" value="${esc(v.name)}" required></label>
+        ${money ? `<label>${t('amountEach')}<input name="amount" inputmode="decimal" value="${esc(v.amount)}" required></label>` : ''}
+        ${ty === 'equb' ? `<label>${t('freq')}<select name="freq">${['daily', 'weekly', 'monthly'].map(f => `<option value="${f}" ${(v.freq || 'weekly') === f ? 'selected' : ''}>${t(f)}</option>`).join('')}</select></label>` : ''}
+        ${ty === 'share' ? `<label>${t('totalOpt')}<input name="total" inputmode="decimal" value="${esc(v.total)}"></label>
+        <div class="checks" style="grid-template-columns:1fr"><label><input type="checkbox" name="includeMe" ${s.vals && !v.includeMe ? '' : 'checked'}>${t('includeMe')}</label></div>` : ''}
+        <label>${ty === 'share' ? t('peoplePhone') : t('members')}<textarea name="members" id="people" required>${esc(v.members)}</textarea></label>
+        ${ty === 'share' ? contactsPanel(true) : ''}${err()}${btns(t('create'))}</form>`;
+    }
+    case 'expense':
+      return `<form data-form="expense"><h2>${t('addExpense')}</h2><label>${t('what')}<input name="what" maxlength="80" value="${esc(v.what)}" required></label>
+        <label>${t('amount')}<input name="amount" inputmode="decimal" value="${esc(v.amount)}" required></label>
+        <label>${t('paidBy')}<select name="paidBy">${opts(v.paidBy)}</select></label>
+        <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;font-size:14px;padding:0">${t('splitAmong')}</legend><div class="checks">${g.members.map(m => `<label><input type="checkbox" name="among" value="${esc(m.id)}" checked>${esc(mname(g, m.id))}</label>`).join('')}</div></fieldset>${err()}${btns(t('save'))}</form>`;
+    case 'person':
+      return `<form data-form="person"><h2>${t(g.type === 'share' ? 'addPerson' : 'addMember')}</h2><label>${t('name')}<input name="name" id="pname" maxlength="60" value="${esc(v.name)}" required></label>
+        ${g.type === 'share' ? `<label>${t('phone')}<input name="phone" id="pphone" inputmode="tel" maxlength="20" value="${esc(v.phone)}"></label>${contactsPanel(false)}` : ''}${err()}${btns(t('save'))}</form>`;
+    case 'settle':
+      return `<form data-form="settle"><h2>${t('pays', esc(mname(g, s.from)), esc(mname(g, s.to)))} · ${fmt(Number(s.amt))}</h2>
+        <label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
+        <label>${t('ref')}<input name="ref" maxlength="40" autocomplete="off" value="${esc(v.ref)}"></label>${err()}${btns(t('markPaid'))}</form>`;
+    case 'request': {
+      const msg = reqMessage(g, s.from, Number(s.amt)), ph = intl((g.members.find(m => m.id === s.from) || {}).phone);
+      return `<div class="box"><h2>${t('reqTitle', esc(mname(g, s.from)))}</h2><textarea id="reqmsg" readonly aria-label="${t('request')}" style="min-height:190px">${esc(msg)}</textarea>
+        ${ph ? `<a class="btn pri" data-act="req-sent" href="sms:${esc(ph)}?body=${encodeURIComponent(msg)}">${t('sendSms')} · ${esc(ph)}</a>` : ''}
+        <button data-act="req-share">${t('shareVia')}</button><button data-act="req-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
+    }
+    case 'me': {
+      const m = s.vals || ME();
+      return `<form data-form="me"><h2>${t('myPay')}</h2><div class="note">${t('myPayHelp')}</div>
+        ${meFields(m)}${err()}${btns(t('save'))}</form>`;
+    }
+    case 'pay':
+      return `<form data-form="pay"><h2>${esc(mname(g, s.mid))} · ${fmt(g.amountC)}</h2><div class="note">${t('noHold')}</div>
+        <label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
+        <label>${t('ref')}<input name="ref" maxlength="40" autocomplete="off" value="${esc(v.ref)}"></label>${err()}${btns(t('record'))}</form>`;
+    case 'draw':
+      return `<form data-form="draw"><h2>${t('runDraw')}</h2><div class="note">${t('mixHelp')}</div>
+        <label>${t('mixLabel')}<input name="mix" maxlength="40" autocomplete="off" value="${esc(v.mix)}" required></label>${err()}${btns(t('runDraw'), 'amb')}</form>`;
+    case 'payout':
+      return `<form data-form="payout"><h2>${t('addPayout')}</h2><label>${t('toWhom')}<select name="memberId">${opts(v.memberId)}</select></label>
+        <label>${t('reason')}<input name="reason" maxlength="80" value="${esc(v.reason)}" required></label><label>${t('amount')}<input name="amount" inputmode="decimal" value="${esc(v.amount)}" required></label>${err()}${btns(t('save'))}</form>`;
+    case 'pin':
+      return `<form data-form="pin"><h2>${t('pinSet')}</h2><label>${t('pinNew')}<input name="a" type="password" inputmode="numeric" autocomplete="new-password" required></label>
+        <label>${t('pinAgain')}<input name="b" type="password" inputmode="numeric" autocomplete="new-password" required></label><div class="warn">${t('pinForget')}</div>${err()}${btns(t('save'))}</form>`;
+    case 'export':
+      return `<div class="box"><h2>${t('exportB')}</h2><div class="${s.locked ? 'note' : 'warn'}">${t(s.locked ? 'exportEnc' : 'exportHelp')}</div><textarea id="exp" readonly aria-label="${t('backup')}">${esc(s.text)}</textarea>
+        <div class="row"><button class="grow" data-act="copy-exp">${t('copy')}</button><button class="grow" data-act="save-exp">${t('saveFile')}</button></div><button class="pri full" data-act="close">${t('close')}</button></div>`;
+    case 'import':
+      return `<form data-form="import"><h2>${t('importB')}</h2><div class="warn">${t('importWarn')}</div><label>${t('pasteBackup')}<textarea name="json" id="imp" required>${esc(v.json)}</textarea></label>
+        <label>${t('chooseFile')}<input type="file" id="impfile" accept=".json,application/json,text/plain"></label>
+        <label>${t('backupPin')}<input name="pin" type="password" inputmode="numeric" autocomplete="off"></label>${err()}${btns(t('restore'), 'danger')}</form>`;
+    case 'wipe':
+      return `<form data-form="wipe"><h2>${t('wipe')}</h2><label>${t('wipeAsk')}<input name="word" autocomplete="off" autocapitalize="characters" required></label>${err()}${btns(t('wipe'), 'danger')}</form>`;
+    case 'summary':
+      return `<div class="box"><h2>${t('sumTitle')}</h2><div class="note">${t('sumHelp')}</div><textarea id="summsg" readonly aria-label="${t('sumTitle')}" style="min-height:220px">${esc(s.text)}</textarea>
+        <button class="pri" data-act="sum-share">${t('shareVia')}</button><button data-act="sum-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
+    case 'check':
+      return `<form data-form="check"><h2>${t('checkSum')}</h2><div class="mut">${t('checkHelp')}</div>
+        <label>${t('pasteSum')}<textarea name="code" required>${esc(v.code)}</textarea></label>${err()}${btns(t('check'))}</form>`;
+    case 'confirm':
+      return `<div class="box"><div>${esc(s.msg)}</div><div class="row"><button class="grow" data-act="close">${t('cancel')}</button><button class="grow ${s.cls || 'pri'}" data-act="${s.act}">${t('yes')}</button></div></div>`;
+    case 'info':
+      return `<div class="box"><div>${s.html}</div><button class="pri full" data-act="close">${t('close')}</button></div>`;
+  }
+  return '';
+}
+
+function render() {
+  document.documentElement.lang = lang;
+  let html;
+  if (ui.view === 'lock') html = vLock();
+  else if (!ME().name) { ui.sheet = null; html = vWelcome(); }
+  else if (ui.view === 'history') html = vHistory();
+  else if (ui.view === 'settings') html = vSettings();
+  else if (ui.view === 'checked' && ui.chk) html = vChecked();
+  else if (ui.view === 'group' && group()) { const g = group(); html = g.type === 'share' ? vShare(g) : g.type === 'equb' ? vEqub(g) : vIddir(g); }
+  else { ui.view = 'home'; html = vHome(); }
+  $('#app').innerHTML = html;
+  const sh = $('#sheet');
+  if (ui.sheet) { sh.innerHTML = sheetHtml(); sh.hidden = false; const f = sh.querySelector('input:not([type=checkbox]):not([type=file]),textarea,select,button'); if (f && !ui.sheet.shown) { f.focus(); ui.sheet.shown = true; } }
+  else { sh.hidden = true; sh.innerHTML = ''; }
+  const ta = $('#people'); if (ta) { const have = new Set(ta.value.split('\n').map(x => x.trim())); document.querySelectorAll('.cpick').forEach(c => { c.checked = have.has(cline(S.contacts[Number(c.dataset.i)])); }); }
+  ui.flash = '';
+}
+let toastTimer;
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 1800); }
+function copyText(text) {
+  const fallback = () => { ui.sheet = { kind: 'info', html: `<textarea readonly aria-label="${t('copy')}">${esc(text)}</textarea>` }; render(); };
+  try { navigator.clipboard.writeText(text).then(() => toast(t('copied')), fallback); } catch (e) { fallback(); }
+}
+const confirmSheet = (msg, act, cls, extra) => { ui.sheet = Object.assign({ kind: 'confirm', msg, act, cls }, extra || {}); render(); };
+
+/* ---------- actions ---------- */
+const A = {
+  go(d) { ui.view = d.view; ui.gid = null; ui.sheet = null; render(); },
+  open(d) { ui.view = 'group'; ui.gid = d.id; ui.tab = 'exp'; ui.period = null; render(); },
+  tab(d) { ui.tab = d.tab; render(); },
+  close() { ui.sheet = null; render(); },
+  async lang() { lang = lang === 'en' ? 'am' : 'en'; await persist(); render(); },
+  async setlang(d) { lang = d.l; await persist(); render(); },
+  new(d) { ui.sheet = { kind: 'new', type: d.type }; render(); },
+  sheet(d) { ui.sheet = Object.assign({}, { ...d }); render(); },
+  request(d) { ui.sheet = hasPay() ? { kind: 'request', from: d.from, amt: d.amt } : { kind: 'me', err: t('needPay'), back: { kind: 'request', from: d.from, amt: d.amt } }; render(); },
+  async 'req-sent'() { await markReq(); },
+  async 'req-share'() { const msg = $('#reqmsg').value; let ok = false; try { if (navigator.share) { await navigator.share({ text: msg }); ok = true; } } catch (e) { if (e && e.name === 'AbortError') return; } await markReq(); if (!ok) copyText(msg); },
+  async 'req-copy'() { const msg = $('#reqmsg').value; await markReq(); copyText(msg); },
+  async pick(d) {
+    let got; try { got = await navigator.contacts.select(['name', 'tel'], { multiple: !!d.multi }); } catch (e) { return; }
+    const list = got.map(c => ({ name: (c.name && c.name[0] || '').trim(), phone: (c.tel && c.tel[0] || '').replace(/[^\d+]/g, '') })).filter(c => c.name || c.phone).map(c => ({ name: c.name || c.phone, phone: c.phone }));
+    if (!list.length) return;
+    if (d.multi) { const ta = $('#people'), have = ta.value.split('\n').map(x => x.trim()).filter(Boolean); list.forEach(c => { if (!have.includes(cline(c))) have.push(cline(c)); }); ta.value = have.join('\n'); }
+    else { $('#pname').value = list[0].name; $('#pphone').value = list[0].phone; }
+    addContacts(list); snapForm(); await persist(); render();
+  },
+  'use-contact'(d) { const c = (S.contacts || [])[Number(d.i)]; if (c) { $('#pname').value = c.name; $('#pphone').value = c.phone; } },
+  month(d) { const p = period(); let m = p.m + Number(d.d), y = p.y; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } ui.period = { y, m }; render(); },
+
+  'ask-void'(d) { confirmSheet(t('voidAsk'), 'void', 'danger', { id: d.id }); },
+  async void() { const g = group(), e = g.expenses.find(x => x.id === ui.sheet.id); if (e && !e.void) await emit('void', g.id, { id: e.id }); await commit(); },
+  /* The summary text members read, then the fingerprint and the code their app checks. */
+  async 'send-summary'() {
+    const g = group(), p = await Core.packGroup(S.ledger, g.id, ME().name);
+    const text = summaryLines(g, mname).join('\n') + '\n\n' + t('fpLine', shortFp(p.fp)) + '\n' + t('sumHow') + '\n\n' + p.code;
+    ui.sheet = { kind: 'summary', text }; render();
+  },
+  async 'sum-share'() { const msg = $('#summsg').value; try { if (navigator.share) { await navigator.share({ text: msg }); return; } } catch (e) { if (e && e.name === 'AbortError') return; } copyText(msg); },
+  'sum-copy'() { copyText($('#summsg').value); },
+  async 'open-kept'(d) {
+    const k = (S.kept || []).find(x => x.gid === d.id), r = k && await Core.openCopy(k, null);
+    if (!r) return toast(t('badSum'));
+    r.status = 'kept'; ui.chk = { c: k, r }; ui.view = 'checked'; ui.period = null; render();
+  },
+  'ask-keep-new'() { confirmSheet(t('keepAsk'), 'keep-new', 'danger'); },
+  async 'keep-new'() { keepSummary(ui.chk.c, ui.chk.r.g); ui.chk.r.status = 'same'; await commit(); },
+  'ask-drop-kept'() { confirmSheet(t('removeCopyAsk', ui.chk.r.g.name), 'drop-kept', 'danger'); },
+  async 'drop-kept'() { S.kept = (S.kept || []).filter(k => k.gid !== ui.chk.c.gid); ui.chk = null; ui.view = 'home'; await commit(); },
+
+  'ask-undo'(d) { confirmSheet(t('undoAsk'), 'undo', 'danger', { mid: d.mid, key: d.key }); },
+  async undo() { const g = group(), s = ui.sheet, p = pays(g, s.key); if (p[s.mid]) await emit('undo', g.id, { key: s.key, mid: s.mid }); await commit(); },
+  async 'prep-draw'() { const g = group(); if (g.done || g.draws[g.round]) return; const seed = Core.newSeed(), c = await Core.sha(seed); await emit('commit', g.id, { round: g.round, seed, commit: c }); await commit(); },
+  async 'check-draw'(d0) {
+    const g = group(), r = Number(d0.round), d = g.draws[r];
+    const ok = (await Core.sha(d.seed)) === d.commit && d.eligible[await Core.pickIndex(d.seed, r, d.eligible.length, d.mix)] === d.winnerId;
+    ui.sheet = { kind: 'info', html: `<div class="${ok ? 'note' : 'warn'} b">${ok ? t('drawOk') : t('drawBad')}</div><p class="b">${t('sealed')}</p><div class="mono">${esc(d.commit)}</div>${d.mix != null ? `<p class="b">${t('mixLabel')}</p><div class="mono">${esc(d.mix)}</div>` : ''}<p class="b">${t('opened')}</p><div class="mono">${esc(d.seed)}</div>` };
+    render();
+  },
+  'ask-next'() {
+    const g = group(), d = g.draws[g.round];
+    if (!d || !d.winnerId) { ui.flash = t('drawFirst'); return render(); }
+    const unpaid = g.members.length - Object.keys(pays(g, 'r' + g.round)).length;
+    if (unpaid > 0) confirmSheet(t('unpaidWarn', unpaid), 'next', 'danger'); else A.next();
+  },
+  async next() { const g = group(); await emit('next', g.id, { round: g.round }); await commit(); },
+
+  'ask-delete'() { confirmSheet(t('deleteAsk', group().name), 'delete', 'danger'); },
+  async delete() { const g = group(); await emit('delete', g.id, { name: g.name }); ui.view = 'home'; ui.gid = null; await commit(); },
+
+  async verify() { const bad = await Core.verifyLedger(S); ui.flash = bad ? t('ledgerBad', bad) : t('ledgerOk', S.ledger.length); render(); },
+  async export() {
+    const text = JSON.stringify(KEY ? await Core.seal(KEY, SALT, S) : S);
+    ui.sheet = { kind: 'export', text, locked: !!KEY }; render();
+  },
+  'copy-exp'() { copyText($('#exp').value); },
+  'save-exp'() {
+    try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([$('#exp').value], { type: 'application/json' })); a.download = 'mahiber-backup-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click(); a.remove(); } catch (e) { copyText($('#exp').value); }
+  },
+  'pin-off'() { confirmSheet(t('pinRemove') + '?', 'pin-off-yes', 'danger'); },
+  async 'pin-off-yes'() { KEY = null; SALT = null; await commit(); },
+  lock() { if (KEY && !volatile) doLock(); },
+};
+async function markReq() {
+  const g = group(), s = ui.sheet; g.requests = g.requests || {};
+  if (!g.requests[s.from]) await emit('request', g.id, { from: s.from, amountC: Number(s.amt) });
+  await commit();
+}
+const keyLabel = (g, key) => key[0] === 'r' ? t('round', key.slice(1), g.members.length) : plabel({ y: Number(key.slice(1, 5)), m: Number(key.slice(6)) });
+/* Keep the latest checked copy of a group; the next summary is compared with it. */
+function keepSummary(c, g) {
+  S.kept = (S.kept || []).filter(k => k.gid !== c.gid);
+  S.kept.unshift({ gid: c.gid, by: c.by, name: g.name, type: g.type, ev: c.ev, seeds: c.seeds, at: new Date().toISOString() });
+  if (S.kept.length > 200) S.kept.length = 200;
+}
+function doLock() { BOX = JSON.parse(lsGet(LS)); S = null; GROUPS = []; ALL = new Map(); ui.chk = null; KEY = null; SALT = null; ui.view = 'lock'; ui.sheet = null; ui.gid = null; render(); }
+
+/* ---------- forms ---------- */
+const fail = (msg, vals) => { ui.sheet.err = msg; ui.sheet.vals = vals; ui.sheet.shown = false; render(); };
+const F = {
+  async unlock(f) {
+    let st = {}; try { st = JSON.parse(lsGet('mahiber.fail') || '{}'); } catch (e) {}
+    const left = Math.ceil(((st.until || 0) - Date.now()) / 1000);
+    if (left > 0) { ui.flash = t('wait', left); return render(); }
+    let o = null;
+    try { o = await Core.unseal(f.pin, BOX); if (!Core.validState(o.data)) throw new Error('bad'); }
+    catch (e) {
+      st.n = (st.n || 0) + 1; if (st.n >= 5) st.until = Date.now() + 30000 * (st.n - 4);
+      lsSet('mahiber.fail', JSON.stringify(st)); ui.flash = t('wrongPin'); return render();
+    }
+    const old = o.data.v !== 2;
+    if (old) keepCopy(LS + '.before-v2', JSON.stringify(BOX));
+    S = await Core.migrate(o.data); derive(); KEY = o.key; SALT = o.salt; BOX = null; lang = S.lang || lang; lsDel('mahiber.fail'); ui.view = 'home';
+    if (old) await persist();
+    render();
+  },
+  async new(f) {
+    const ty = ui.sheet.type, name = f.name.trim(), ms = people(f.members), amountC = Core.toC(f.amount), totalC = Core.toC(f.total);
+    if (!name) return fail(t('needName'), f);
+    if (ty === 'share' ? ms.length < 1 : ms.length < 2) return fail(t(ty === 'share' ? 'needPerson' : 'needTwo'), f);
+    if (ty !== 'share' && !amountC) return fail(t('needAmount'), f);
+    if (ty === 'share' && String(f.total || '').trim() && !totalC) return fail(t('needAmount'), f);
+    const gid = Core.uid(), members = ms.map(x => ({ id: Core.uid(), name: x.name, phone: x.phone })), data = { type: ty, name, members };
+    if (ty === 'share') members.unshift({ id: Core.uid(), name: t('me'), me: true });
+    else { data.amountC = amountC; if (ty === 'equb') data.freq = ['daily', 'weekly', 'monthly'].includes(f.freq) ? f.freq : 'weekly'; }
+    await emit('create', gid, data);
+    if (ty === 'share' && totalC) await emit('expense', gid, { id: Core.uid(), what: name, amountC: totalC, paidBy: members[0].id, among: members.filter(m => f.includeMe || !m.me).map(m => m.id) });
+    ui.view = 'group'; ui.gid = gid; ui.tab = 'exp'; ui.period = null; await commit();
+  },
+  async expense(f) {
+    const g = group(), amountC = Core.toC(f.amount), among = f.among.filter(id => g.members.some(m => m.id === id));
+    if (!f.what.trim()) return fail(t('needName'), f);
+    if (!amountC) return fail(t('needAmount'), f);
+    if (!among.length) return fail(t('needOne'), f);
+    if (!g.members.some(m => m.id === f.paidBy)) return;
+    await emit('expense', g.id, { id: Core.uid(), what: f.what.trim(), amountC, paidBy: f.paidBy, among }); await commit();
+  },
+  async person(f) {
+    const g = group(), name = f.name.trim(); if (!name) return fail(t('needName'), f);
+    await emit('member', g.id, { id: Core.uid(), name, phone: String(f.phone || '').replace(/[\s-]/g, '') }); await commit();
+  },
+  async settle(f) {
+    const g = group(), s = ui.sheet, amt = Number(s.amt), method = METHODS.includes(f.method) ? f.method : 'cash', ref = f.ref.trim();
+    if (method !== 'cash' && !ref) return fail(t('refNeed'), f);
+    if (!Number.isSafeInteger(amt) || amt <= 0 || !g.members.some(m => m.id === s.from) || !g.members.some(m => m.id === s.to)) return;
+    await emit('settle', g.id, { from: s.from, to: s.to, amountC: amt, method, ref }); await commit();
+  },
+  async me(f) {
+    const m = readMe(f), e = meErr(m, !!ui.sheet.back); if (e) return fail(t(e), m);
+    const back = ui.sheet.back; S.me = m; await persist(); ui.sheet = back || null; render();
+  },
+  async welcome(f) {
+    const m = readMe(f), e = meErr(m, false); if (e) { ui.flash = t(e); ui.wvals = m; return render(); }
+    S.me = m; ui.wvals = null; ui.view = 'home'; await persist(); render();
+  },
+  async pay(f) {
+    const g = group(), s = ui.sheet, method = METHODS.includes(f.method) ? f.method : 'cash', ref = f.ref.trim();
+    if (method !== 'cash' && !ref) return fail(t('refNeed'), f);
+    if (!g.members.some(m => m.id === s.mid) || pays(g, s.key)[s.mid]) return;
+    await emit('pay', g.id, { key: s.key, mid: s.mid, method, ref }); await commit();
+  },
+  async draw(f) {
+    const g = group(), d = g.draws[g.round], mix = String(f.mix || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+    if (!mix) return fail(t('needMix'), f);
+    if (!d || d.winnerId) return;
+    const won = equbWinners(g), elig = g.members.filter(m => !won.includes(m.id));
+    const i = await Core.pickIndex(d.seed, g.round, elig.length, mix);
+    await emit('draw', g.id, { round: g.round, mix, winnerId: elig[i].id, eligible: elig.map(m => m.id) }); await commit();
+  },
+  async payout(f) {
+    const g = group(), amountC = Core.toC(f.amount);
+    if (!f.reason.trim()) return fail(t('needName'), f);
+    if (!amountC) return fail(t('needAmount'), f);
+    if (!g.members.some(m => m.id === f.memberId)) return;
+    await emit('payout', g.id, { id: Core.uid(), memberId: f.memberId, reason: f.reason.trim(), amountC }); await commit();
+  },
+  async pin(f) {
+    if (!(window.crypto && crypto.subtle)) return fail(t('noCrypto'), {});
+    if (f.a !== f.b || f.a.length < 6) return fail(t('pinMismatch'), {});
+    SALT = Core.rnd(16); KEY = await Core.deriveKey(f.a, SALT); await commit();
+  },
+  async import(f) {
+    let d, key = null, salt = null; try { d = JSON.parse(f.json); } catch (e) { d = null; }
+    if (d && d.enc === true && typeof d.ct === 'string') {
+      if (!(window.crypto && crypto.subtle)) return fail(t('noCrypto'), { json: f.json });
+      try { const o = await Core.unseal(String(f.pin || ''), d); d = o.data; key = o.key; salt = o.salt; }
+      catch (e) { return fail(t('wrongPin'), { json: f.json }); }
+    }
+    /* an old (v1) backup is converted first, then the result is checked strictly */
+    try { if (Core.validState(d)) d = await Core.migrate(d); } catch (e) { d = null; }
+    if (!Core.validBackup(d)) return fail(t('badBackup'), {});
+    S = { v: 2, lang: d.lang, me: d.me || {}, contacts: d.contacts || [], ledger: d.ledger, kept: d.kept || [] }; derive(); ui.chk = null;
+    if (key) { KEY = key; SALT = salt; } /* a locked backup keeps its PIN */
+    lang = S.lang === 'am' ? 'am' : 'en'; ui.view = 'home'; await commit();
+  },
+  async check(f) {
+    const c = await Core.readPack(f.code), kept = c && (S.kept || []).find(k => k.gid === c.gid);
+    const r = c && await Core.openCopy(c, kept);
+    if (!r) return fail(t('badSum'), f);
+    if (r.status !== 'changed') keepSummary(c, r.g); /* a changed record never replaces the kept copy by itself */
+    ui.chk = { c, r }; ui.view = 'checked'; ui.gid = null; ui.period = null; await commit();
+  },
+  async wipe(f) {
+    if (f.word.trim() !== 'DELETE') return fail(t('wipeAsk'), {});
+    S = fresh(); derive(); KEY = null; SALT = null; lsDel('mahiber.fail'); ui.view = 'home'; await commit();
+  },
+};
+
+/* ---------- wiring ---------- */
+let busy = false;
+async function run(fn, arg) { if (busy) return; busy = true; try { await fn(arg); } catch (e) { console.error(e); } finally { busy = false; } }
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]'); if (!el) { if (ev.target.id === 'sheet') A.close(); return; }
+  if (el.tagName === 'BUTTON' && el.closest('form') && el.type !== 'button') return;
+  const fn = A[el.dataset.act]; if (fn) { if (el.tagName !== 'A') ev.preventDefault(); run(fn, el.dataset); }
+});
+document.addEventListener('submit', ev => {
+  ev.preventDefault();
+  const form = ev.target, fn = F[form.dataset.form]; if (!fn) return;
+  const fd = new FormData(form), o = { among: fd.getAll('among') };
+  for (const [k, v] of fd.entries()) if (k !== 'among' && typeof v === 'string') o[k] = v;
+  run(fn, o);
+});
+document.addEventListener('change', ev => {
+  const el = ev.target;
+  if (el.classList && el.classList.contains('cpick')) {
+    const ta = $('#people'), c = S.contacts[Number(el.dataset.i)]; if (!ta || !c) return;
+    let lines = ta.value.split('\n').map(x => x.trim()).filter(Boolean); const line = cline(c);
+    if (el.checked) { if (!lines.includes(line)) lines.push(line); } else lines = lines.filter(x => x !== line);
+    ta.value = lines.join('\n'); return;
+  }
+  if (el.id === 'vcffile' && el.files[0]) {
+    const r = new FileReader();
+    r.onload = () => run(async () => { const list = Core.parseVcf(String(r.result)), n = addContacts(list); snapForm(); await persist(); render(); toast(list.length ? t('imported', n) : t('noVcf')); });
+    r.readAsText(el.files[0]); return;
+  }
+  if (ev.target.id !== 'impfile' || !ev.target.files[0]) return;
+  const r = new FileReader(); r.onload = () => { const ta = $('#imp'); if (ta) ta.value = String(r.result); }; r.readAsText(ev.target.files[0]);
+});
+document.addEventListener('input', ev => {
+  if (ev.target.id !== 'csearch') return; const q = ev.target.value.trim().toLowerCase();
+  document.querySelectorAll('#clist .crow').forEach(r => { r.style.display = r.dataset.q.includes(q) ? '' : 'none'; });
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ui.sheet) A.close(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) hiddenAt = Date.now();
+  else if (KEY && !volatile && hiddenAt && Date.now() - hiddenAt > 120000) doLock();
+});
+
+/* A spare copy that must never stop the app, so a full storage is ignored here. */
+function keepCopy(k, v) { try { if (localStorage.getItem(k) == null) localStorage.setItem(k, v); } catch (e) {} }
+(async function boot() {
+  try { localStorage.setItem('mahiber.t', '1'); localStorage.removeItem('mahiber.t'); } catch (e) { volatile = true; }
+  lang = lsGet('mahiber.lang') === 'am' ? 'am' : 'en';
+  const raw = lsGet(LS); let box = null; try { box = JSON.parse(raw); } catch (e) {}
+  if (box && box.enc) { BOX = box; ui.view = 'lock'; }
+  else if (box && Core.validState(box.data)) {
+    const old = box.data.v !== 2;
+    try {
+      if (old) keepCopy(LS + '.before-v2', raw); /* the old record stays on the phone after the upgrade */
+      S = await Core.migrate(box.data); derive(); lang = S.lang === 'am' ? 'am' : lang;
+      if (old) await persist();
+    } catch (e) { console.error(e); keepCopy(LS + '.unreadable', raw); S = fresh(); derive(); }
+  }
+  else { if (raw) keepCopy(LS + '.unreadable', raw); S = fresh(); }
+  render();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+  try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+})();
+})();
+</script>
+</body>
+</html>
