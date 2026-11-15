@@ -62,6 +62,8 @@ textarea{min-height:110px;resize:vertical}
 .checks input{width:20px;min-height:20px;height:20px;accent-color:var(--g)}
 #sheet{position:fixed;inset:0;background:rgba(20,32,26,.55);display:flex;align-items:flex-end;justify-content:center;z-index:5}
 #sheet[hidden]{display:none}
+#sheet.still form,#sheet.still .box{animation:none!important}
+.share3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px} .share3 a.btn{min-height:46px;padding:0 6px;border-radius:12px;border:1.5px solid var(--g);color:var(--g);font-weight:700;font-size:15px}
 #sheet form,#sheet .box{background:#fff;width:100%;max-width:480px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px 22px;display:flex;flex-direction:column;gap:12px}
 .err{color:var(--red);font-weight:600;font-size:14px}
 .note{background:var(--gl);color:#0A4B30;border-radius:10px;padding:10px 12px;font-size:14px}
@@ -415,6 +417,8 @@ const Core = (() => {
     if (s.kept != null && !(Array.isArray(s.kept) && s.kept.length <= 200 && s.kept.every(validKept))) return false;
     const me = s.me == null ? {} : s.me;
     if (!isObj(me) || !['name', 'telebirr', 'cbe', 'cbeName', 'bankName', 'bankAcct'].every(k => optStr(me[k], 60))) return false;
+    /* the user's own QR screenshots: small JPEG or PNG pictures only */
+    if (!['qrTele', 'qrCbe'].every(k => me[k] == null || (str(me[k], 300000) && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/]+=*$/.test(me[k])))) return false;
     if (s.contacts != null && !(Array.isArray(s.contacts) && s.contacts.length <= 5000 && s.contacts.every(c => isObj(c) && str(c.name, 60) && str(c.phone, 16)))) return false;
     if (!s.ledger.every((e, i) => isObj(e) && e.i === i + 1 && time(e.at) && str(e.type, 20) && str(e.gid, 40) &&
       (e.data === undefined ? str(e.text, 2000) : isObj(e.data) && isId(e.gid)) && (e.prev === 'genesis' || h64(e.prev)) && h64(e.hash))) return false;
@@ -475,6 +479,12 @@ en: {
  reqTitle:'Payment request for {0}', sendSms:'Send by SMS', shareVia:'Send with another app', needPerson:'Add at least 1 person.',
  msgHello:'Hello {0}, your share for "{1}" is {2}.', msgPay:'Please pay {0} with whichever you prefer:', msgTele:'Telebirr: {0}', msgCbe:'CBE account: {0}', msgAfter:'After paying, send me the transaction number.',
  L_req:'Payment request prepared for {0}: {1}', L_snapshot:'Records of {0} moved to the new history format',
+ badCbe:'A CBE account number has 13 digits and starts with 1000.', badTele:'Enter a mobile number like 0911223344.',
+ peopleN:'People ({0})', noPeople:'Nobody added yet. Tap + beside a contact, or type a name below.', notInContacts:'Not in your contacts? Type the name', addBtn:'Add', addedTag:'Added',
+ qrTitle:'My QR pictures (optional)', qrHelp:'In the Telebirr or CBE app, open your own receive-money QR, take a screenshot and choose it here. It is attached to payment requests so friends can scan it and pay.',
+ qrTele:'Telebirr QR', qrCbe:'CBE QR', choosePic:'Choose picture', qrBad:'That file is not a picture the app can use.',
+ qrNote:'"Send with another app" also attaches your QR pictures. The Telegram, WhatsApp and SMS buttons send the text only.',
+ sendWith:'Send with', viaSms:'SMS', smsShort:'SMS sends the figures only, because the check code is too long for it. Telegram, WhatsApp and other apps send the whole message.',
  sumTitle:'Summary for members', sumHelp:'Send this whole message to the members. Their copy of Mahiber can check it with "Check a summary". Phone numbers are left out, and a sealed draw code stays sealed until the draw.',
  fpLine:'Record fingerprint: {0}', sumHow:'To check it: open Mahiber, choose "Check a summary" and paste this whole message.',
  checkSum:'Check a summary', checkHelp:'Paste the whole summary message an organiser sent you. Your app rebuilds the figures from the record itself and checks every draw.',
@@ -534,6 +544,12 @@ am: {
  reqTitle:'ለ{0} የክፍያ ጥያቄ', sendSms:'በኤስኤምኤስ ላክ', shareVia:'በሌላ መተግበሪያ ላክ', needPerson:'ቢያንስ 1 ሰው ያስገቡ።',
  msgHello:'ሰላም {0}፣ ለ"{1}" የእርስዎ ድርሻ {2} ነው።', msgPay:'እባክዎ በመረጡት መንገድ ለ{0} ይክፈሉ፦', msgTele:'ቴሌብር፦ {0}', msgCbe:'የንግድ ባንክ ሂሳብ፦ {0}', msgAfter:'ከከፈሉ በኋላ የግብይት ቁጥሩን ይላኩልኝ።',
  L_req:'ለ{0} የክፍያ ጥያቄ ተዘጋጀ፦ {1}', L_snapshot:'የ{0} መዝገብ ወደ አዲሱ የታሪክ አቀማመጥ ተዛውሯል',
+ badCbe:'የንግድ ባንክ ሂሳብ ቁጥር 13 አሃዝ ነው፤ በ1000 ይጀምራል።', badTele:'እንደ 0911223344 ያለ የሞባይል ቁጥር ያስገቡ።',
+ peopleN:'ሰዎች ({0})', noPeople:'እስካሁን ማንም አልተጨመረም። ከአድራሻው አጠገብ + ይጫኑ፣ ወይም ከታች ስም ይጻፉ።', notInContacts:'በአድራሻዎ ውስጥ የለም? ስሙን ይጻፉ', addBtn:'ጨምር', addedTag:'ተጨምሯል',
+ qrTitle:'የእኔ የQR ምስሎች (አማራጭ)', qrHelp:'በቴሌብር ወይም በንግድ ባንክ መተግበሪያ የራስዎን ገንዘብ መቀበያ QR ይክፈቱ፣ ስክሪንሾት ያንሱ እና እዚህ ይምረጡት። ጓደኞችዎ ስካን አድርገው እንዲከፍሉ ከክፍያ ጥያቄ ጋር ይያያዛል።',
+ qrTele:'የቴሌብር QR', qrCbe:'የንግድ ባንክ QR', choosePic:'ምስል ምረጥ', qrBad:'ይህ ፋይል መተግበሪያው ሊጠቀምበት የሚችል ምስል አይደለም።',
+ qrNote:'"በሌላ መተግበሪያ ላክ" የQR ምስሎችዎንም ያያይዛል። የቴሌግራም፣ የዋትስአፕ እና የኤስኤምኤስ ቁልፎች ጽሑፉን ብቻ ይልካሉ።',
+ sendWith:'በዚህ ላክ', viaSms:'ኤስኤምኤስ', smsShort:'ኤስኤምኤስ ቁጥሮቹን ብቻ ይልካል፤ የማረጋገጫ ኮዱ ለእሱ በጣም ረጅም ነው። ቴሌግራም፣ ዋትስአፕ እና ሌሎች መተግበሪያዎች መልእክቱን በሙሉ ይልካሉ።',
  sumTitle:'ለአባላት ማጠቃለያ', sumHelp:'ይህን መልእክት በሙሉ ለአባላት ይላኩ። የእነሱ ማህበር "ማጠቃለያ አረጋግጥ" በሚለው ሊያረጋግጠው ይችላል። ስልክ ቁጥሮች አይካተቱም፤ የታሸገ የእጣ ኮድ እስከ እጣው ድረስ እንደታሸገ ይቆያል።',
  fpLine:'የመዝገቡ አሻራ፦ {0}', sumHow:'ለማረጋገጥ፦ ማህበርን ይክፈቱ፣ "ማጠቃለያ አረጋግጥ" ይምረጡ እና ይህን መልእክት በሙሉ ይለጥፉ።',
  checkSum:'ማጠቃለያ አረጋግጥ', checkHelp:'አደራጁ የላከልዎትን የማጠቃለያ መልእክት በሙሉ ይለጥፉ። መተግበሪያዎ ቁጥሮቹን ከመዝገቡ ራሱ እንደገና ያሰላል፤ እያንዳንዱንም እጣ ያረጋግጣል።',
@@ -573,7 +589,8 @@ const people = v => String(v || '').split('\n').map(x => x.trim()).filter(Boolea
 const intl = p => { p = String(p || '').replace(/[\s-]/g, ''); return /^0\d{9}$/.test(p) ? '+251' + p.slice(1) : p; };
 const canPick = () => { try { return 'contacts' in navigator && typeof navigator.contacts.select === 'function' && window.top === window.self; } catch (e) { return false; } };
 /* Only a name is needed to use the app; a way to be paid is needed only for payment requests. */
-const meErr = (m, needPay) => !m.name ? 'needName' : m.telebirr && !/^\+?\d{9,13}$/.test(m.telebirr) ? 'badPhone'
+const meErr = (m, needPay) => !m.name ? 'needName' : m.telebirr && !/^(\+251|251|0)[79]\d{8}$/.test(m.telebirr) ? 'badTele'
+  : m.cbe && !/^1000\d{9}$/.test(m.cbe) ? 'badCbe'
   : needPay && !(m.telebirr || m.cbe || (m.bankName && m.bankAcct)) ? 'needPay' : '';
 const readMe = f => ({ name: f.name.trim(), telebirr: f.telebirr.replace(/[\s-]/g, ''), cbe: f.cbe.replace(/\s/g, ''), cbeName: f.cbeName.trim(), bankName: f.bankName.trim(), bankAcct: f.bankAcct.replace(/\s/g, '') });
 const hasPay = () => !meErr(ME(), true);
@@ -585,16 +602,29 @@ function addContacts(list) {
   return n;
 }
 function snapForm() { const f = $('#sheet form'); if (!f || !ui.sheet) return; const o = {}; for (const [k, v] of new FormData(f).entries()) if (typeof v === 'string') o[k] = v; ui.sheet.vals = o; }
-function contactsPanel(multi) {
+const plines = v => String(v || '').split('\n').map(x => x.trim()).filter(Boolean);
+/* People for a new share, added one at a time: + beside a contact, or a typed name. The chosen
+   people are kept as "name, phone" lines in a hidden field, which the form reads as before. */
+function peoplePicker(v) {
+  const chosen = people(v.members);
+  return `<input type="hidden" name="members" value="${esc(plines(v.members).join('\n'))}">
+    <div class="card" style="padding:10px 12px"><div class="b">${t('peopleN', chosen.length)}</div>
+      ${chosen.length ? chosen.map((p, i) => `<div class="crow"><span class="grow">${esc(p.name)} <span class="mut">${esc(p.phone)}</span></span><button type="button" class="sm link" data-act="rm-person" data-i="${i}" aria-label="${t('remove')} ${esc(p.name)}">${t('remove')}</button></div>`).join('') : `<div class="mut">${t('noPeople')}</div>`}</div>
+    ${contactsPanel(true, plines(v.members))}
+    <div class="card" style="padding:10px 12px"><div class="b">${t('notInContacts')}</div>
+      <input name="pn" id="pn" maxlength="60" placeholder="${t('name')}" aria-label="${t('name')}" value="${esc(v.pn)}">
+      <div class="row"><input name="pp" id="pp" class="grow" inputmode="tel" maxlength="20" placeholder="${t('phone')}" aria-label="${t('phone')}" value="${esc(v.pp)}"><button type="button" class="sm pri" data-act="add-manual">+ ${t('addBtn')}</button></div></div>`;
+}
+function contactsPanel(multi, have) {
   const cs = S.contacts || [];
   return `<div class="card" style="padding:10px 12px"><div class="b">${t('contacts')}</div>
     ${cs.length ? `<input id="csearch" type="search" placeholder="${t('search')}" aria-label="${t('search')}"><div id="clist" style="max-height:190px;overflow:auto">${cs.map((c, i) => { const q = esc((c.name + ' ' + c.phone).toLowerCase()), lab = `${esc(c.name)} <span class="mut">${esc(c.phone)}</span>`;
-      return multi ? `<label class="crow" data-q="${q}"><input type="checkbox" class="cpick" data-i="${i}"><span>${lab}</span></label>` : `<button type="button" class="crow link" data-q="${q}" data-act="use-contact" data-i="${i}"><span>${lab}</span></button>`; }).join('')}</div>` : `<div class="mut">${t('vcfHelp')}</div>`}
+      return multi ? `<div class="crow" data-q="${q}"><span class="grow">${lab}</span>${have.includes(cline(c)) ? `<span class="pill p-ok">${t('addedTag')}</span>` : `<button type="button" class="sm pri" style="min-height:36px;padding:0 14px;font-size:18px" data-act="add-contact" data-i="${i}" aria-label="${t('addBtn')} ${esc(c.name)}">+</button>`}</div>` : `<button type="button" class="crow link" data-q="${q}" data-act="use-contact" data-i="${i}"><span>${lab}</span></button>`; }).join('')}</div>` : `<div class="mut">${t('vcfHelp')}</div>`}
     <div class="row">${canPick() ? `<button type="button" class="sm grow" data-act="pick" ${multi ? 'data-multi="1"' : ''}>${t('pickPhone')}</button>` : ''}<label class="filebtn grow">${t('importVcf')}<input type="file" id="vcffile" accept=".vcf,text/vcard,text/x-vcard"></label></div></div>`;
 }
 const meFields = m => `<label>${t('myName')}<input name="name" maxlength="60" value="${esc(m.name)}" required></label>
         <label>${t('telebirrNo')}<input name="telebirr" inputmode="tel" maxlength="20" value="${esc(m.telebirr)}"></label>
-        <label>${t('cbeNo')}<input name="cbe" inputmode="numeric" maxlength="30" value="${esc(m.cbe)}"></label>
+        <label>${t('cbeNo')}<input name="cbe" inputmode="numeric" maxlength="13" placeholder="1000…" value="${esc(m.cbe)}"></label>
         <label>${t('cbeHolder')}<input name="cbeName" maxlength="60" value="${esc(m.cbeName)}"></label>
         <label>${t('otherBank')}<input name="bankName" maxlength="40" value="${esc(m.bankName)}"></label>
         <label>${t('otherAcct')}<input name="bankAcct" inputmode="numeric" maxlength="30" value="${esc(m.bankAcct)}"></label>`;
@@ -606,12 +636,33 @@ function vWelcome() {
     <div class="note">${t('promise')}<br>${t('onDevice')}</div></main>`;
 }
 function reqMessage(g, from, amt) {
-  const m = ME(), L = [t('msgHello', mname(g, from), g.name, fmt(amt)), t('msgPay', m.name)];
+  return [t('msgHello', mname(g, from), g.name, fmt(amt))].concat(payLines(), t('msgAfter')).join('\n');
+}
+/* How to pay the user: their numbers as message lines. Empty when no payment details are saved. */
+function payLines() {
+  const m = ME(), L = [];
   if (m.telebirr) L.push('- ' + t('msgTele', m.telebirr));
   if (m.cbe) L.push('- ' + t('msgCbe', m.cbe) + (m.cbeName ? ' (' + m.cbeName + ')' : ''));
   if (m.bankName && m.bankAcct) L.push('- ' + m.bankName + ': ' + m.bankAcct);
-  L.push(t('msgAfter'));
-  return L.join('\n');
+  return L.length ? [t('msgPay', m.name)].concat(L) : [];
+}
+/* The user's own Telebirr and CBE QR pictures (screenshots they saved), as files to attach. */
+const QRS = [['qrTele', 'telebirr-qr.jpg'], ['qrCbe', 'cbe-qr.jpg']];
+/* Small previews of the saved QR pictures, with the note about which button attaches them. */
+const qrStrip = () => { const have = QRS.filter(([k]) => isQr(ME()[k])); return have.length ? `<div class="row" style="justify-content:flex-start">${have.map(([k]) => `<img src="${esc(ME()[k])}" alt="${t(k)}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">`).join('')}<span class="mut grow">${t('qrNote')}</span></div>` : ''; };
+const isQr = x => typeof x === 'string' && x.length <= 300000 && /^data:image\/(png|jpeg);base64,[A-Za-z0-9+/]+=*$/.test(x);
+async function qrFiles() {
+  const out = [];
+  for (const [k, name] of QRS) { const u = ME()[k]; if (!isQr(u)) continue; try { out.push(new File([await (await fetch(u)).blob()], name, { type: 'image/jpeg' })); } catch (e) {} }
+  return out;
+}
+/* Open the phone's share sheet with the message and, where the phone allows it, the QR pictures.
+   Returns false when sharing is not available, so the caller can copy the text instead. */
+async function shareMsg(text) {
+  if (!navigator.share) return false;
+  const files = await qrFiles();
+  if (files.length && navigator.canShare && navigator.canShare({ files })) { await navigator.share({ text, files }); return true; }
+  await navigator.share({ text }); return true;
 }
 
 function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { volatile = true; return null; } }
@@ -662,6 +713,10 @@ const iddirFund = g => {
   return c - g.payouts.reduce((s, p) => s + p.amountC, 0);
 };
 const equbWinners = g => Object.keys(g.draws).map(r => g.draws[r].winnerId).filter(Boolean);
+/* Links that open a chat app with the message ready. Telegram's share link needs an address,
+   so it carries the app's own, which also tells the receiver where to open Mahiber. */
+const tgLink = text => 'https://t.me/share/url?url=' + encodeURIComponent(location.origin + location.pathname) + '&text=' + encodeURIComponent(text);
+const waLink = (text, phone) => 'https://wa.me/' + String(phone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(text);
 const shortFp = fp => fp.slice(0, 16).match(/.{4}/g).join(' ');
 /* Plain-text summary of a group. nm names a member: the organiser's own app or a member's checked copy. */
 function summaryLines(g, nm) {
@@ -843,8 +898,8 @@ function sheetHtml() {
         ${ty === 'equb' ? `<label>${t('freq')}<select name="freq">${['daily', 'weekly', 'monthly'].map(f => `<option value="${f}" ${(v.freq || 'weekly') === f ? 'selected' : ''}>${t(f)}</option>`).join('')}</select></label>` : ''}
         ${ty === 'share' ? `<label>${t('totalOpt')}<input name="total" inputmode="decimal" value="${esc(v.total)}"></label>
         <div class="checks" style="grid-template-columns:1fr"><label><input type="checkbox" name="includeMe" ${s.vals && !v.includeMe ? '' : 'checked'}>${t('includeMe')}</label></div>` : ''}
-        <label>${ty === 'share' ? t('peoplePhone') : t('members')}<textarea name="members" id="people" required>${esc(v.members)}</textarea></label>
-        ${ty === 'share' ? contactsPanel(true) : ''}${err()}${btns(t('create'))}</form>`;
+        ${ty === 'share' ? peoplePicker(v) : `<label>${t('members')}<textarea name="members" id="people" required>${esc(v.members)}</textarea></label>`}
+        ${err()}${btns(t('create'))}</form>`;
     }
     case 'expense':
       return `<form data-form="expense"><h2>${t('addExpense')}</h2><label>${t('what')}<input name="what" maxlength="80" value="${esc(v.what)}" required></label>
@@ -862,12 +917,17 @@ function sheetHtml() {
       const msg = reqMessage(g, s.from, Number(s.amt)), ph = intl((g.members.find(m => m.id === s.from) || {}).phone);
       return `<div class="box"><h2>${t('reqTitle', esc(mname(g, s.from)))}</h2><textarea id="reqmsg" readonly aria-label="${t('request')}" style="min-height:190px">${esc(msg)}</textarea>
         ${ph ? `<a class="btn pri" data-act="req-sent" href="sms:${esc(ph)}?body=${encodeURIComponent(msg)}">${t('sendSms')} · ${esc(ph)}</a>` : ''}
-        <button data-act="req-share">${t('shareVia')}</button><button data-act="req-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
+        <div class="share3" ${ph ? 'style="grid-template-columns:1fr 1fr"' : ''}><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(tgLink(msg))}">Telegram</a><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(waLink(msg, ph))}">WhatsApp</a>${ph ? '' : `<a class="btn" data-act="req-sent" href="${esc('sms:?&body=' + encodeURIComponent(msg))}">${t('viaSms')}</a>`}</div>
+        ${qrStrip()}<button data-act="req-share">${t('shareVia')}</button><button data-act="req-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
     }
     case 'me': {
       const m = s.vals || ME();
       return `<form data-form="me"><h2>${t('myPay')}</h2><div class="note">${t('myPayHelp')}</div>
-        ${meFields(m)}${err()}${btns(t('save'))}</form>`;
+        ${meFields(m)}
+        <div class="card" style="padding:10px 12px"><div class="b">${t('qrTitle')}</div><div class="mut">${t('qrHelp')}</div>
+          ${QRS.map(([k]) => { const u = ME()[k]; return `<div class="row"><span class="grow b">${t(k)}</span>${isQr(u) ? `<img src="${esc(u)}" alt="${t(k)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line)"><button type="button" class="sm link" data-act="qr-del" data-k="${k}">${t('remove')}</button>`
+            : `<label class="filebtn" style="min-height:40px">${t('choosePic')}<input type="file" class="qrfile" data-k="${k}" accept="image/*"></label>`}</div>`; }).join('')}</div>
+        ${err()}${btns(t('save'))}</form>`;
     }
     case 'pay':
       return `<form data-form="pay"><h2>${esc(mname(g, s.mid))} · ${fmt(g.amountC)}</h2><div class="note">${t('noHold')}</div>
@@ -893,7 +953,10 @@ function sheetHtml() {
       return `<form data-form="wipe"><h2>${t('wipe')}</h2><label>${t('wipeAsk')}<input name="word" autocomplete="off" autocapitalize="characters" required></label>${err()}${btns(t('wipe'), 'danger')}</form>`;
     case 'summary':
       return `<div class="box"><h2>${t('sumTitle')}</h2><div class="note">${t('sumHelp')}</div><textarea id="summsg" readonly aria-label="${t('sumTitle')}" style="min-height:220px">${esc(s.text)}</textarea>
-        <button class="pri" data-act="sum-share">${t('shareVia')}</button><button data-act="sum-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
+        <div class="b">${t('sendWith')}</div>
+        <div class="share3"><a class="btn" target="_blank" rel="noopener" href="${esc(tgLink(s.text))}">Telegram</a><a class="btn" target="_blank" rel="noopener" href="${esc(waLink(s.text))}">WhatsApp</a><a class="btn" href="${esc('sms:?&body=' + encodeURIComponent(s.short))}">${t('viaSms')}</a></div>
+        <div class="mut">${t('smsShort')}</div>
+        ${qrStrip()}<button class="pri" data-act="sum-share">${t('shareVia')}</button><button data-act="sum-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
     case 'check':
       return `<form data-form="check"><h2>${t('checkSum')}</h2><div class="mut">${t('checkHelp')}</div>
         <label>${t('pasteSum')}<textarea name="code" required>${esc(v.code)}</textarea></label>${err()}${btns(t('check'))}</form>`;
@@ -917,9 +980,8 @@ function render() {
   else { ui.view = 'home'; html = vHome(); }
   $('#app').innerHTML = html;
   const sh = $('#sheet');
-  if (ui.sheet) { sh.innerHTML = sheetHtml(); sh.hidden = false; const f = sh.querySelector('input:not([type=checkbox]):not([type=file]),textarea,select,button'); if (f && !ui.sheet.shown) { f.focus(); ui.sheet.shown = true; } }
+  if (ui.sheet) { sh.classList.toggle('still', !!ui.sheet.shown); sh.innerHTML = sheetHtml(); sh.hidden = false; const f = sh.querySelector('input:not([type=checkbox]):not([type=file]),textarea,select,button'); if (f && !ui.sheet.shown) { f.focus(); ui.sheet.shown = true; } }
   else { sh.hidden = true; sh.innerHTML = ''; }
-  const ta = $('#people'); if (ta) { const have = new Set(ta.value.split('\n').map(x => x.trim())); document.querySelectorAll('.cpick').forEach(c => { c.checked = have.has(cline(S.contacts[Number(c.dataset.i)])); }); }
   ui.flash = '';
 }
 let toastTimer;
@@ -927,6 +989,16 @@ function toast(msg) { const el = $('#toast'); el.textContent = msg; el.hidden = 
 function copyText(text) {
   const fallback = () => { ui.sheet = { kind: 'info', html: `<textarea readonly aria-label="${t('copy')}">${esc(text)}</textarea>` }; render(); };
   try { navigator.clipboard.writeText(text).then(() => toast(t('copied')), fallback); } catch (e) { fallback(); }
+}
+/* The chosen people of the open "new share" form, as "name, phone" lines. */
+function setPeople(fn) { const v = ui.sheet.vals = ui.sheet.vals || {}, L = plines(v.members); fn(L); v.members = L.slice(0, 500).join('\n'); }
+/* Re-render a sheet without losing the place: scroll positions and the contact search stay. */
+function keepScroll(fn) {
+  const pos = s => { const el = $(s); return el ? el.scrollTop : 0; }, a = pos('#sheet form'), b = pos('#clist'), q = ($('#csearch') || {}).value || '';
+  fn();
+  const f = $('#sheet form'), cl = $('#clist'), cs = $('#csearch');
+  if (cs && q) { cs.value = q; cs.dispatchEvent(new Event('input', { bubbles: true })); }
+  if (f) f.scrollTop = a; if (cl) cl.scrollTop = b;
 }
 const confirmSheet = (msg, act, cls, extra) => { ui.sheet = Object.assign({ kind: 'confirm', msg, act, cls }, extra || {}); render(); };
 
@@ -942,15 +1014,26 @@ const A = {
   sheet(d) { ui.sheet = Object.assign({}, { ...d }); render(); },
   request(d) { ui.sheet = hasPay() ? { kind: 'request', from: d.from, amt: d.amt } : { kind: 'me', err: t('needPay'), back: { kind: 'request', from: d.from, amt: d.amt } }; render(); },
   async 'req-sent'() { await markReq(); },
-  async 'req-share'() { const msg = $('#reqmsg').value; let ok = false; try { if (navigator.share) { await navigator.share({ text: msg }); ok = true; } } catch (e) { if (e && e.name === 'AbortError') return; } await markReq(); if (!ok) copyText(msg); },
+  async 'req-share'() { const msg = $('#reqmsg').value; let ok = false; try { ok = await shareMsg(msg); } catch (e) { if (e && e.name === 'AbortError') return; } await markReq(); if (!ok) copyText(msg); },
+  async 'qr-del'(d) { if (!QRS.some(q => q[0] === d.k)) return; snapForm(); delete ME()[d.k]; await persist(); keepScroll(render); },
   async 'req-copy'() { const msg = $('#reqmsg').value; await markReq(); copyText(msg); },
   async pick(d) {
     let got; try { got = await navigator.contacts.select(['name', 'tel'], { multiple: !!d.multi }); } catch (e) { return; }
     const list = got.map(c => ({ name: (c.name && c.name[0] || '').trim(), phone: (c.tel && c.tel[0] || '').replace(/[^\d+]/g, '') })).filter(c => c.name || c.phone).map(c => ({ name: c.name || c.phone, phone: c.phone }));
     if (!list.length) return;
-    if (d.multi) { const ta = $('#people'), have = ta.value.split('\n').map(x => x.trim()).filter(Boolean); list.forEach(c => { if (!have.includes(cline(c))) have.push(cline(c)); }); ta.value = have.join('\n'); }
-    else { $('#pname').value = list[0].name; $('#pphone').value = list[0].phone; }
-    addContacts(list); snapForm(); await persist(); render();
+    if (!d.multi) { $('#pname').value = list[0].name; $('#pphone').value = list[0].phone; }
+    addContacts(list); snapForm();
+    if (d.multi) setPeople(L => { list.forEach(c => { if (!L.includes(cline(c))) L.push(cline(c)); }); });
+    await persist(); keepScroll(render);
+  },
+  /* new share: people are added and removed one at a time */
+  'add-contact'(d) { const c = (S.contacts || [])[Number(d.i)]; if (!c) return; snapForm(); setPeople(L => { if (!L.includes(cline(c))) L.push(cline(c)); }); keepScroll(render); },
+  'rm-person'(d) { snapForm(); setPeople(L => { L.splice(Number(d.i), 1); }); keepScroll(render); },
+  'add-manual'() {
+    snapForm(); const v = ui.sheet.vals, name = String(v.pn || '').trim().replace(/[,;]+/g, ' ').slice(0, 60), phone = String(v.pp || '').replace(/[^\d+]/g, '').slice(0, 16);
+    if (!name) { const el = $('#pn'); if (el) el.focus(); return; }
+    setPeople(L => { const line = phone ? name + ', ' + phone : name; if (!L.includes(line)) L.push(line); }); v.pn = ''; v.pp = '';
+    keepScroll(render); const el = $('#pn'); if (el) el.focus();
   },
   'use-contact'(d) { const c = (S.contacts || [])[Number(d.i)]; if (c) { $('#pname').value = c.name; $('#pphone').value = c.phone; } },
   month(d) { const p = period(); let m = p.m + Number(d.d), y = p.y; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } ui.period = { y, m }; render(); },
@@ -960,10 +1043,10 @@ const A = {
   /* The summary text members read, then the fingerprint and the code their app checks. */
   async 'send-summary'() {
     const g = group(), p = await Core.packGroup(S.ledger, g.id, ME().name);
-    const text = summaryLines(g, mname).join('\n') + '\n\n' + t('fpLine', shortFp(p.fp)) + '\n' + t('sumHow') + '\n\n' + p.code;
-    ui.sheet = { kind: 'summary', text }; render();
+    const pay = payLines(), short = summaryLines(g, mname).join('\n') + (pay.length ? '\n\n' + pay.join('\n') : '') + '\n\n' + t('fpLine', shortFp(p.fp));
+    ui.sheet = { kind: 'summary', text: short + '\n' + t('sumHow') + '\n\n' + p.code, short }; render();
   },
-  async 'sum-share'() { const msg = $('#summsg').value; try { if (navigator.share) { await navigator.share({ text: msg }); return; } } catch (e) { if (e && e.name === 'AbortError') return; } copyText(msg); },
+  async 'sum-share'() { const msg = $('#summsg').value; try { if (await shareMsg(msg)) return; } catch (e) { if (e && e.name === 'AbortError') return; } copyText(msg); },
   'sum-copy'() { copyText($('#summsg').value); },
   async 'open-kept'(d) {
     const k = (S.kept || []).find(x => x.gid === d.id), r = k && await Core.openCopy(k, null);
@@ -1074,7 +1157,8 @@ const F = {
   },
   async me(f) {
     const m = readMe(f), e = meErr(m, !!ui.sheet.back); if (e) return fail(t(e), m);
-    const back = ui.sheet.back; S.me = m; await persist(); ui.sheet = back || null; render();
+    const back = ui.sheet.back; QRS.forEach(([k]) => { if (isQr(ME()[k])) m[k] = ME()[k]; }); /* the QR pictures are saved apart from the form */
+    S.me = m; await persist(); ui.sheet = back || null; render();
   },
   async welcome(f) {
     const m = readMe(f), e = meErr(m, false); if (e) { ui.flash = t(e); ui.wvals = m; return render(); }
@@ -1150,25 +1234,47 @@ document.addEventListener('submit', ev => {
 });
 document.addEventListener('change', ev => {
   const el = ev.target;
-  if (el.classList && el.classList.contains('cpick')) {
-    const ta = $('#people'), c = S.contacts[Number(el.dataset.i)]; if (!ta || !c) return;
-    let lines = ta.value.split('\n').map(x => x.trim()).filter(Boolean); const line = cline(c);
-    if (el.checked) { if (!lines.includes(line)) lines.push(line); } else lines = lines.filter(x => x !== line);
-    ta.value = lines.join('\n'); return;
+  /* A QR screenshot is shrunk to at most 640 px and kept with the payment details. */
+  if (el.classList && el.classList.contains('qrfile') && el.files[0]) {
+    const k = el.dataset.k, url = URL.createObjectURL(el.files[0]), img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(url); toast(t('qrBad')); };
+    img.onload = () => run(async () => {
+      const sc = Math.min(1, 640 / Math.max(img.width, img.height)), cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round(img.width * sc)); cv.height = Math.max(1, Math.round(img.height * sc));
+      const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      const data = cv.toDataURL('image/jpeg', 0.85);
+      if (!QRS.some(q => q[0] === k) || !isQr(data)) return toast(t('qrBad'));
+      snapForm(); ME()[k] = data; await persist(); keepScroll(render);
+    });
+    img.src = url; return;
   }
   if (el.id === 'vcffile' && el.files[0]) {
     const r = new FileReader();
-    r.onload = () => run(async () => { const list = Core.parseVcf(String(r.result)), n = addContacts(list); snapForm(); await persist(); render(); toast(list.length ? t('imported', n) : t('noVcf')); });
+    r.onload = () => run(async () => { const list = Core.parseVcf(String(r.result)), n = addContacts(list); snapForm(); await persist(); keepScroll(render); toast(list.length ? t('imported', n) : t('noVcf')); });
     r.readAsText(el.files[0]); return;
   }
   if (ev.target.id !== 'impfile' || !ev.target.files[0]) return;
   const r = new FileReader(); r.onload = () => { const ta = $('#imp'); if (ta) ta.value = String(r.result); }; r.readAsText(ev.target.files[0]);
 });
 document.addEventListener('input', ev => {
+  /* The CBE account is normally in the user's own name: fill the holder name from "Your name"
+     once an account number is typed, and stop as soon as the user edits the holder name. */
+  const fm = ev.target.form, el = ev.target;
+  if (fm && fm.elements.cbeName && ['name', 'cbe', 'cbeName'].includes(el.name)) {
+    const h = fm.elements.cbeName;
+    if (el === h) h.dataset.auto = '';
+    else if (!h.value || h.dataset.auto) { h.value = fm.elements.cbe.value.trim() ? fm.elements.name.value.trim() : ''; h.dataset.auto = '1'; }
+    return;
+  }
   if (ev.target.id !== 'csearch') return; const q = ev.target.value.trim().toLowerCase();
   document.querySelectorAll('#clist .crow').forEach(r => { r.style.display = r.dataset.q.includes(q) ? '' : 'none'; });
 });
-document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && ui.sheet) A.close(); });
+document.addEventListener('keydown', ev => {
+  if (ev.key === 'Escape' && ui.sheet) A.close();
+  /* Enter in the "not in contacts" boxes adds that person; it must not create the share */
+  if (ev.key === 'Enter' && (ev.target.id === 'pn' || ev.target.id === 'pp')) { ev.preventDefault(); run(A['add-manual']); }
+});
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) hiddenAt = Date.now();
   else if (KEY && !volatile && hiddenAt && Date.now() - hiddenAt > 120000) doLock();
