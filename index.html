@@ -423,8 +423,27 @@ const Core = (() => {
     const a = s.match(/(?:ETB|Birr|ብር)\s*([\d,]+(?:\.\d{1,2})?)/i) || s.match(/([\d,]+(?:\.\d{1,2})?)\s*(?:ETB|Birr|ብር)/i);
     const tok = [s.match(/\b(FT[A-Z0-9]{8,14})\b/), s.match(/(?:transaction\s*(?:number|no\.?|id)|ref(?:erence)?\.?\s*(?:number|no\.?)?|txn\s*id|የግብይት\s*ቁጥር(?:ዎ)?)\s*(?:is|፦|:|-)?\s*([A-Za-z0-9]{6,20})\b/i)]
       .map(m => m ? m[1].toUpperCase() : '').find(x => /\d/.test(x) && /^[A-Z0-9]+$/.test(x)) || ''; /* a real number has a digit in it */
-    const method = /cbe\s*birr/i.test(s) ? 'CBE Birr' : /tele\s*birr|ቴሌብር/i.test(s) ? 'Telebirr' : /\bCBE\b|commercial bank|\bFT[A-Z0-9]{8,14}\b|ንግድ ባንክ|\bbank\b/i.test(s) ? 'bank' : '';
-    return { amountC: a ? toC(a[1]) : 0, ref: tok, method };
+    /* a receipt link counts only when it points at Telebirr's or CBE's own receipt site */
+    const urls = s.match(/https?:\/\/[^\s<>"']+/gi) || [], link = urls.map(officialLink).find(Boolean) || '';
+    const tele = /transactioninfo\.ethiotelecom\.et/.test(link), fromLink = tele ? ((link.match(/\/receipt\/([A-Za-z0-9]{6,20})$/) || [])[1] || '').toUpperCase() : '';
+    const method = /cbe\s*birr/i.test(s) ? 'CBE Birr' : tele || /tele\s*birr|ቴሌብር/i.test(s) ? 'Telebirr' : link || /\bCBE\b|commercial bank|\bFT[A-Z0-9]{8,14}\b|ንግድ ባንክ|\bbank\b/i.test(s) ? 'bank' : '';
+    return { amountC: a ? toC(a[1]) : 0, ref: tok || fromLink, method, link, badLink: urls.length > 0 && !link };
+  }
+  /* The receipt pages the two services publish themselves. Text in a message can be edited by
+     whoever sends it; these pages cannot, so they are what the organiser checks a payment against. */
+  const RECEIPT_HOSTS = { 'transactioninfo.ethiotelecom.et': [''], 'apps.cbe.com.et': ['', '100'], 'mbreciept.cbe.com.et': [''] };
+  function officialLink(u) {
+    try {
+      const x = new URL(String(u).replace(/[.,;:)\]]+$/, ''));
+      const ports = Object.prototype.hasOwnProperty.call(RECEIPT_HOSTS, x.hostname) ? RECEIPT_HOSTS[x.hostname] : null;
+      return x.protocol === 'https:' && !x.username && !x.password && ports && ports.includes(x.port) && x.href.length <= 300 ? x.href : '';
+    } catch (e) { return ''; }
+  }
+  /* The receipt to open for a payment: the official link that came with it, or, for Telebirr,
+     the page built from the transaction number. Empty when there is none. */
+  function receiptUrl(method, ref, link) {
+    const l = officialLink(link || ''); if (l) return l;
+    return method === 'Telebirr' && /^[A-Z0-9]{8,12}$/.test(String(ref || '')) ? 'https://transactioninfo.ethiotelecom.et/receipt/' + ref : '';
   }
   const validKept = k => validCopy(k) && time(k.at) && str(k.name, 60) && ['share', 'equb', 'iddir'].includes(k.type);
 
@@ -441,7 +460,7 @@ const Core = (() => {
     const all = replay(s.ledger).all, made = s.ledger.filter(e => e.data !== undefined && (e.type === 'create' || e.type === 'snapshot')).length;
     return all.size === made && [...all.values()].every(validGroup); /* every group in the file must load */
   }
-  return { sha, rnd, uid, toC, splitEqual, shareBalances, settleUp, newSeed, pickIndex, appendLedger, verifyLedger, replay, migrate, ethDate, deriveKey, seal, unseal, validState, validBackup, validGroup, parseVcf, packGroup, readPack, openCopy, fingerprint, parsePaySms };
+  return { sha, rnd, uid, toC, splitEqual, shareBalances, settleUp, newSeed, pickIndex, appendLedger, verifyLedger, replay, migrate, ethDate, deriveKey, seal, unseal, validState, validBackup, validGroup, parseVcf, packGroup, readPack, openCopy, fingerprint, parsePaySms, officialLink, receiptUrl };
 })();
 if (typeof module !== 'undefined') module.exports = Core;
 </script>
@@ -499,8 +518,12 @@ en: {
  peopleN:'People ({0})', noPeople:'Nobody added yet. Tap + beside a contact, or type a name below.', notInContacts:'Not in your contacts? Type the name', addBtn:'Add', addedTag:'Added',
  pinOfferTitle:'Protect your records?', pinOffer:'With a PIN, everything in the app is encrypted on this phone, so nobody else who picks it up can read your records. You can also set it later in Settings.', later:'Later',
  joinTitle:'Also split these expenses with this person', joinHelp:'Ticked expenses are divided again to include them. Untick one they had no part in.', L_joinN:'Earlier expenses now shared with them: {0}',
- pasteSms:'Paste the Telebirr or CBE message (optional)', pasteSmsEg:'Paste the SMS from the bank, or the confirmation the person sent you', smsFound:'Found: {0}.', smsNone:'No amount or transaction number found in that text. Type them below.',
+ pasteSms:'Paste the Telebirr or CBE message (optional)', pasteSmsEg:'Paste the confirmation the person sent you, or the SMS from the bank', smsFound:'Found: {0}.', smsNone:'No amount or transaction number found in that text. Type them below.',
  smsDiff:'The message says {0}, but {1} is expected.', refUsed:'This transaction number is already recorded in this group.',
+ openReceipt:'Open the official receipt', receipt:'Receipt', paidReceipt:'Receipt:',
+ receiptWhy:'A pasted message can be edited by whoever sent it. The receipt page comes from Telebirr or CBE itself, so check the amount and the receiver there before you mark this paid.',
+ receiptNone:'There is no receipt link for this one. Check the transaction number against your own bank SMS before you mark this paid.',
+ linkBad:'The link in this message is not an official Telebirr or CBE receipt link. Do not open or trust it.',
  msgDue:'Hello {0}, your contribution to "{1}" for {3} is {2}.', msgAfterLink:'After paying, confirm here with the transaction number:', paidAsk:'{0} asked you to pay for "{1}"', paidStep1:'1. Pay {0}', paidStep1Help:'Copy the number, open Telebirr or your bank app, and send the amount above.',
  paidStep2:'2. Confirm your payment', paidSend:'Send the confirmation to {0}', paidMsg:'I paid {0} for "{1}".', paidClose:'Close and open Mahiber',
  payOn:'Ask them to pay on', allWays:'All', msgPayOne:'Please pay {0} on:',
@@ -575,6 +598,10 @@ am: {
  joinTitle:'እነዚህን ወጪዎች ከዚህ ሰው ጋርም አካፍል', joinHelp:'ምልክት የተደረገባቸው ወጪዎች እሱን ጨምሮ እንደገና ይካፈላሉ። ያልተሳተፈበትን ምልክቱን ያንሱ።', L_joinN:'አሁን ከእሱ ጋር የሚካፈሉ ቀደምት ወጪዎች፦ {0}',
  pasteSms:'የቴሌብር ወይም የንግድ ባንክ መልእክቱን ይለጥፉ (አማራጭ)', pasteSmsEg:'ከባንኩ የመጣውን ኤስኤምኤስ፣ ወይም ሰውየው የላከልዎትን ማረጋገጫ ይለጥፉ', smsFound:'ተገኝቷል፦ {0}።', smsNone:'በጽሑፉ ውስጥ መጠን ወይም የግብይት ቁጥር አልተገኘም። ከታች ይጻፏቸው።',
  smsDiff:'መልእክቱ {0} ይላል፤ የሚጠበቀው ግን {1} ነው።', refUsed:'ይህ የግብይት ቁጥር በዚህ ቡድን ውስጥ አስቀድሞ ተመዝግቧል።',
+ openReceipt:'ይፋዊ ደረሰኙን ክፈት', receipt:'ደረሰኝ', paidReceipt:'ደረሰኝ፦',
+ receiptWhy:'የተለጠፈ መልእክት በላኪው ሊስተካከል ይችላል። የደረሰኙ ገጽ ከቴሌብር ወይም ከንግድ ባንክ ራሱ የመጣ ነው፤ ተከፍሏል ከማለትዎ በፊት መጠኑን እና ተቀባዩን እዚያ ያረጋግጡ።',
+ receiptNone:'ለዚህ ክፍያ የደረሰኝ ሊንክ የለም። ተከፍሏል ከማለትዎ በፊት የግብይት ቁጥሩን ከራስዎ የባንክ ኤስኤምኤስ ጋር ያመሳክሩ።',
+ linkBad:'በዚህ መልእክት ውስጥ ያለው ሊንክ ይፋዊ የቴሌብር ወይም የንግድ ባንክ የደረሰኝ ሊንክ አይደለም። አይክፈቱት፤ አይመኑትም።',
  msgDue:'ሰላም {0}፣ ለ"{1}" የ{3} መዋጮዎ {2} ነው።', msgAfterLink:'ከከፈሉ በኋላ በግብይት ቁጥሩ እዚህ ያረጋግጡ፦', paidAsk:'{0} ለ"{1}" እንዲከፍሉ ጠይቀዋል', paidStep1:'1. ለ{0} ይክፈሉ', paidStep1Help:'ቁጥሩን ይቅዱ፣ ቴሌብርን ወይም የባንክ መተግበሪያዎን ይክፈቱ፣ ከላይ ያለውን መጠን ይላኩ።',
  paidStep2:'2. ክፍያዎን ያረጋግጡ', paidSend:'ማረጋገጫውን ለ{0} ይላኩ', paidMsg:'ለ"{1}" {0} ከፍያለሁ።', paidClose:'ዝጋና ማህበርን ክፈት',
  payOn:'በዚህ እንዲከፍሉ ጠይቅ', allWays:'ሁሉም', msgPayOne:'እባክዎ ለ{0} በዚህ ይክፈሉ፦',
@@ -886,7 +913,7 @@ const delBtn = () => `<button class="full" data-act="send-summary" style="margin
 function memberRows(g, key) {
   const p = pays(g, key);
   return `<div class="card list">${g.members.map(m => { const x = p[m.id]; return `<div class="row"><div class="grow"><div class="b">${esc(m.name)}</div>
-    <div class="mut">${x ? esc(mlabel(x.method)) + (x.ref ? ' · ' + esc(x.ref) : '') : t('notPaid')}</div></div>
+    <div class="mut">${x ? esc(mlabel(x.method)) + (x.ref ? ' · ' + esc(x.ref) : '') + (Core.receiptUrl(x.method, x.ref, '') ? ` · <a href="${esc(Core.receiptUrl(x.method, x.ref, ''))}" target="_blank" rel="noopener">${t('receipt')}</a>` : '') : t('notPaid')}</div></div>
     ${x ? `<span class="pill p-ok">${t('paid')}</span><button class="sm link" data-act="ask-undo" data-mid="${esc(m.id)}" data-key="${esc(key)}">${t('undo')}</button>`
         : `<button class="sm amb" data-act="request" data-from="${esc(m.id)}" data-amt="${esc(g.amountC)}" data-key="${esc(key)}">${t('request')}</button><button class="sm pri" data-act="sheet" data-kind="pay" data-mid="${esc(m.id)}" data-key="${esc(key)}">${t('record')}</button>`}</div>`; }).join('')}</div>`;
 }
@@ -1050,6 +1077,15 @@ function readSms(el) {
   const diff = r.amountC && exp && r.amountC !== exp;
   out.className = diff ? 'warn' : found ? 'note' : 'mut';
   out.textContent = !el.value.trim() ? '' : !found ? t('smsNone') : t('smsFound', found) + (diff ? ' ' + t('smsDiff', fmt(r.amountC), fmt(exp)) : '');
+  const add = (tag, text, cls) => { const n = document.createElement(tag); n.textContent = text; if (cls) n.className = cls; n.style.marginTop = '8px'; out.appendChild(n); return n; };
+  if (r.badLink) { out.className = 'warn'; add('div', t('linkBad'), 'b'); }
+  /* The person marking a payment as paid checks it on the bank's own receipt page: pasted text can
+     be edited by whoever sent it, the receipt page cannot. */
+  if (found && fm.dataset.form !== 'paidform') {
+    const link = Core.receiptUrl(r.method, r.ref, r.link);
+    if (link) { const a = add('a', t('openReceipt'), 'btn pri'); a.href = link; a.target = '_blank'; a.rel = 'noopener'; }
+    add('div', t(link ? 'receiptWhy' : 'receiptNone'));
+  }
 }
 function snapPaid() { const f = $('form[data-form="paidform"]'); if (!f) return; ui.paidVals = { sms: f.elements.sms.value, method: f.elements.method.value, ref: f.elements.ref.value }; }
 /* A transaction number may be recorded once in a group, so one payment cannot be counted twice. */
@@ -1157,7 +1193,10 @@ const A = {
     if (method !== 'cash' && !/^[A-Z0-9]{6,40}$/.test(ref)) { ui.flash = t('refNeed'); return render(); }
     /* the second line is what the organiser's app reads back: method, transaction number, amount */
     const how = { Telebirr: 'Telebirr', 'CBE Birr': 'CBE Birr', bank: 'Bank', cash: 'Cash' }[method];
-    const msg = t('paidMsg', fmt(o.a), o.g) + '\n' + how + (ref ? ' · Ref: ' + ref : '') + ' · ETB ' + (o.a / 100).toFixed(2);
+    /* The confirmation carries the transaction number and the official receipt link, which is what
+       the organiser checks. The amount is the one in the bank's message when there is one. */
+    const r = Core.parsePaySms(v.sms || ''), amt = r.amountC || o.a, link = Core.receiptUrl(method, ref, r.ref === ref ? r.link : '');
+    const msg = t('paidMsg', fmt(amt), o.g) + '\n' + how + (ref ? ' · Ref: ' + ref : '') + ' · ETB ' + (amt / 100).toFixed(2) + (link ? '\n' + t('paidReceipt') + ' ' + link : '');
     if (d.ch === 'tg') window.open(tgTo(msg, o.p), '_blank', 'noopener');
     else if (d.ch === 'wa') window.open(waLink(msg, o.p), '_blank', 'noopener');
     else if (d.ch === 'sms') location.href = 'sms:' + o.p + '?&body=' + encodeURIComponent(msg);
