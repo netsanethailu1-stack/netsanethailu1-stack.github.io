@@ -716,6 +716,8 @@ const equbWinners = g => Object.keys(g.draws).map(r => g.draws[r].winnerId).filt
 /* Links that open a chat app with the message ready. Telegram's share link needs an address,
    so it carries the app's own, which also tells the receiver where to open Mahiber. */
 const tgLink = text => 'https://t.me/share/url?url=' + encodeURIComponent(location.origin + location.pathname) + '&text=' + encodeURIComponent(text);
+/* With a phone number, Telegram opens that person's chat with the message as a draft. */
+const tgTo = (text, phone) => { const p = String(phone || '').replace(/\D/g, ''); return p ? 'https://t.me/+' + p + '?text=' + encodeURIComponent(text) : tgLink(text); };
 const waLink = (text, phone) => 'https://wa.me/' + String(phone || '').replace(/\D/g, '') + '?text=' + encodeURIComponent(text);
 const shortFp = fp => fp.slice(0, 16).match(/.{4}/g).join(' ');
 /* Plain-text summary of a group. nm names a member: the organiser's own app or a member's checked copy. */
@@ -797,18 +799,20 @@ function vChecked() {
     ${r.status === 'changed' ? '' : `<button class="danger full" data-act="ask-drop-kept" style="margin-top:12px">${t('removeCopy')}</button>`}</main>${navBar()}`;
 }
 function vShare(g) {
-  const bal = Core.shareBalances(g), tabs = `<div class="tabs"><button data-act="tab" data-tab="exp" aria-pressed="${ui.tab !== 'bal'}">${t('expenses')}</button><button data-act="tab" data-tab="bal" aria-pressed="${ui.tab === 'bal'}">${t('balances')}</button></div>`;
+  /* One page: expenses first, then the balances and who pays whom, so a request is sent from here. */
+  const bal = Core.shareBalances(g);
   const total = g.expenses.filter(e => !e.void).reduce((s, e) => s + e.amountC, 0);
   let body;
-  if (ui.tab !== 'bal') {
+  {
     const rows = g.expenses.slice().reverse().map(e => `<div class="row"><div class="grow"><div class="b" style="${e.void ? 'text-decoration:line-through' : ''}">${esc(e.what)}</div>
       <div class="mut">${esc(mname(g, e.paidBy))} · ${t('splitN', e.among.length)}${e.void ? ' · ' + t('removedTag') : ''}</div></div>
       <div class="b">${fmt(e.amountC)}</div>${e.void ? '' : `<button class="sm link" data-act="ask-void" data-id="${esc(e.id)}">${t('remove')}</button>`}</div>`).join('');
-    body = `<button class="pri full" data-act="sheet" data-kind="expense">${t('addExpense')}</button>
-      ${rows ? `<div class="card list">${rows}</div>` : `<div class="card mut">${t('noExpenses')}</div>`}`;
-  } else {
     const plan = Core.settleUp(bal), me = meOf(g);
-    body = `<div class="card list">${g.members.map(m => { const b = bal[m.id]; return `<div class="row"><span class="b grow">${esc(mname(g, m.id))}</span>
+    body = `<h2>${t('expenses')}</h2>
+      ${rows ? `<div class="card list">${rows}</div>` : `<div class="card mut">${t('noExpenses')}</div>`}
+      <button class="pri full" data-act="sheet" data-kind="expense">${t('addExpense')}</button>
+      <h2>${t('balances')}</h2>
+      <div class="card list">${g.members.map(m => { const b = bal[m.id]; return `<div class="row"><span class="b grow">${esc(mname(g, m.id))}</span>
         <span class="pill ${b > 0 ? 'p-ok' : b < 0 ? 'p-amb' : 'p-no'}">${b > 0 ? t('getsBack') + ' ' + fmt(b) : b < 0 ? t('owes') + ' ' + fmt(-b) : t('settled')}</span></div>`; }).join('')}</div>
       <h2>${t('whoPays')}</h2>
       ${plan.length ? `<div class="card list">${plan.map(p => { const toMe = me && p.to === me.id, rq = g.requests && g.requests[p.from]; return `<div><div class="row"><div class="grow">${t('pays', '<b>' + esc(mname(g, p.from)) + '</b>', '<b>' + esc(mname(g, p.to)) + '</b>')}<div class="b">${fmt(p.amountC)}</div></div>${rq ? `<span class="pill p-amb">${t('requested')}</span>` : ''}</div>
@@ -816,7 +820,7 @@ function vShare(g) {
       <button class="full" data-act="sheet" data-kind="person">${t('addPerson')}</button>`;
   }
   return `${head(g.name, t('share') + ' · ' + t('membersN', g.members.length))}<main>
-    <div class="card hero"><span class="soft">${t('total')}</span><span class="big">${fmt(total)}</span></div>${tabs}${body}${delBtn()}</main>${navBar()}`;
+    <div class="card hero"><span class="soft">${t('total')}</span><span class="big">${fmt(total)}</span></div>${body}${delBtn()}</main>${navBar()}`;
 }
 const delBtn = () => `<button class="full" data-act="send-summary" style="margin-top:12px">${t('copySummary')}</button><button class="danger full" data-act="ask-delete" style="margin-top:12px">${t('deleteGroup')}</button>`;
 function memberRows(g, key) {
@@ -917,7 +921,7 @@ function sheetHtml() {
       const msg = reqMessage(g, s.from, Number(s.amt)), ph = intl((g.members.find(m => m.id === s.from) || {}).phone);
       return `<div class="box"><h2>${t('reqTitle', esc(mname(g, s.from)))}</h2><textarea id="reqmsg" readonly aria-label="${t('request')}" style="min-height:190px">${esc(msg)}</textarea>
         ${ph ? `<a class="btn pri" data-act="req-sent" href="sms:${esc(ph)}?body=${encodeURIComponent(msg)}">${t('sendSms')} · ${esc(ph)}</a>` : ''}
-        <div class="share3" ${ph ? 'style="grid-template-columns:1fr 1fr"' : ''}><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(tgLink(msg))}">Telegram</a><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(waLink(msg, ph))}">WhatsApp</a>${ph ? '' : `<a class="btn" data-act="req-sent" href="${esc('sms:?&body=' + encodeURIComponent(msg))}">${t('viaSms')}</a>`}</div>
+        <div class="share3" ${ph ? 'style="grid-template-columns:1fr 1fr"' : ''}><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(tgTo(msg, ph))}">Telegram</a><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(waLink(msg, ph))}">WhatsApp</a>${ph ? '' : `<a class="btn" data-act="req-sent" href="${esc('sms:?&body=' + encodeURIComponent(msg))}">${t('viaSms')}</a>`}</div>
         ${qrStrip()}<button data-act="req-share">${t('shareVia')}</button><button data-act="req-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
     }
     case 'me': {
