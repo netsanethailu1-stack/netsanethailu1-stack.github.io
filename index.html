@@ -487,6 +487,7 @@ en: {
  L_req:'Payment request prepared for {0}: {1}', L_snapshot:'Records of {0} moved to the new history format',
  badCbe:'A CBE account number has 13 digits and starts with 1000.', badTele:'Enter a mobile number like 0911223344.',
  peopleN:'People ({0})', noPeople:'Nobody added yet. Tap + beside a contact, or type a name below.', notInContacts:'Not in your contacts? Type the name', addBtn:'Add', addedTag:'Added',
+ pinOfferTitle:'Protect your records?', pinOffer:'With a PIN, everything in the app is encrypted on this phone, so nobody else who picks it up can read your records. You can also set it later in Settings.', later:'Later',
  joinTitle:'Also split these expenses with this person', joinHelp:'Ticked expenses are divided again to include them. Untick one they had no part in.', L_joinN:'Earlier expenses now shared with them: {0}',
  qrTitle:'My QR pictures (optional)', qrHelp:'In the Telebirr or CBE app, open your own receive-money QR, take a screenshot and choose it here. It is attached to payment requests so friends can scan it and pay.',
  qrTele:'Telebirr QR', qrCbe:'CBE QR', choosePic:'Choose picture', qrBad:'That file is not a picture the app can use.',
@@ -553,6 +554,7 @@ am: {
  L_req:'ለ{0} የክፍያ ጥያቄ ተዘጋጀ፦ {1}', L_snapshot:'የ{0} መዝገብ ወደ አዲሱ የታሪክ አቀማመጥ ተዛውሯል',
  badCbe:'የንግድ ባንክ ሂሳብ ቁጥር 13 አሃዝ ነው፤ በ1000 ይጀምራል።', badTele:'እንደ 0911223344 ያለ የሞባይል ቁጥር ያስገቡ።',
  peopleN:'ሰዎች ({0})', noPeople:'እስካሁን ማንም አልተጨመረም። ከአድራሻው አጠገብ + ይጫኑ፣ ወይም ከታች ስም ይጻፉ።', notInContacts:'በአድራሻዎ ውስጥ የለም? ስሙን ይጻፉ', addBtn:'ጨምር', addedTag:'ተጨምሯል',
+ pinOfferTitle:'መዝገብዎ ይጠበቅ?', pinOffer:'በፒን፣ በመተግበሪያው ያለው ሁሉ በዚህ ስልክ ላይ ይመሰጠራል፤ ስልኩን ያነሳ ሌላ ሰው መዝገብዎን ማንበብ አይችልም። በኋላም በቅንብሮች ውስጥ ማዘጋጀት ይችላሉ።', later:'በኋላ',
  joinTitle:'እነዚህን ወጪዎች ከዚህ ሰው ጋርም አካፍል', joinHelp:'ምልክት የተደረገባቸው ወጪዎች እሱን ጨምሮ እንደገና ይካፈላሉ። ያልተሳተፈበትን ምልክቱን ያንሱ።', L_joinN:'አሁን ከእሱ ጋር የሚካፈሉ ቀደምት ወጪዎች፦ {0}',
  qrTitle:'የእኔ የQR ምስሎች (አማራጭ)', qrHelp:'በቴሌብር ወይም በንግድ ባንክ መተግበሪያ የራስዎን ገንዘብ መቀበያ QR ይክፈቱ፣ ስክሪንሾት ያንሱ እና እዚህ ይምረጡት። ጓደኞችዎ ስካን አድርገው እንዲከፍሉ ከክፍያ ጥያቄ ጋር ይያያዛል።',
  qrTele:'የቴሌብር QR', qrCbe:'የንግድ ባንክ QR', choosePic:'ምስል ምረጥ', qrBad:'ይህ ፋይል መተግበሪያው ሊጠቀምበት የሚችል ምስል አይደለም።',
@@ -955,8 +957,8 @@ function sheetHtml() {
       return `<form data-form="payout"><h2>${t('addPayout')}</h2><label>${t('toWhom')}<select name="memberId">${opts(v.memberId)}</select></label>
         <label>${t('reason')}<input name="reason" maxlength="80" value="${esc(v.reason)}" required></label><label>${t('amount')}<input name="amount" inputmode="decimal" value="${esc(v.amount)}" required></label>${err()}${btns(t('save'))}</form>`;
     case 'pin':
-      return `<form data-form="pin"><h2>${t('pinSet')}</h2><label>${t('pinNew')}<input name="a" type="password" inputmode="numeric" autocomplete="new-password" required></label>
-        <label>${t('pinAgain')}<input name="b" type="password" inputmode="numeric" autocomplete="new-password" required></label><div class="warn">${t('pinForget')}</div>${err()}${btns(t('save'))}</form>`;
+      return `<form data-form="pin"><h2>${t(s.offer ? 'pinOfferTitle' : 'pinSet')}</h2>${s.offer ? `<div class="note">${t('pinOffer')}</div>` : ''}<label>${t('pinNew')}<input name="a" type="password" inputmode="numeric" autocomplete="new-password" required></label>
+        <label>${t('pinAgain')}<input name="b" type="password" inputmode="numeric" autocomplete="new-password" required></label><div class="warn">${t('pinForget')}</div>${err()}${s.offer ? `<div class="row"><button type="button" class="grow" data-act="close">${t('later')}</button><button class="grow pri">${t('pinSet')}</button></div>` : btns(t('save'))}</form>`;
     case 'export':
       return `<div class="box"><h2>${t('exportB')}</h2><div class="${s.locked ? 'note' : 'warn'}">${t(s.locked ? 'exportEnc' : 'exportHelp')}</div><textarea id="exp" readonly aria-label="${t('backup')}">${esc(s.text)}</textarea>
         <div class="row"><button class="grow" data-act="copy-exp">${t('copy')}</button><button class="grow" data-act="save-exp">${t('saveFile')}</button></div><button class="pri full" data-act="close">${t('close')}</button></div>`;
@@ -1180,7 +1182,10 @@ const F = {
   },
   async welcome(f) {
     const m = readMe(f), e = meErr(m, false); if (e) { ui.flash = t(e); ui.wvals = m; return render(); }
-    S.me = m; ui.wvals = null; ui.view = 'home'; await persist(); render();
+    S.me = m; ui.wvals = null; ui.view = 'home'; await persist();
+    /* offer the app lock once, straight after the welcome; "Later" leaves it in Settings */
+    if (!KEY && !volatile && window.crypto && crypto.subtle) ui.sheet = { kind: 'pin', offer: true };
+    render();
   },
   async pay(f) {
     const g = group(), s = ui.sheet, method = METHODS.includes(f.method) ? f.method : 'cash', ref = f.ref.trim();
@@ -1205,7 +1210,7 @@ const F = {
   },
   async pin(f) {
     if (!(window.crypto && crypto.subtle)) return fail(t('noCrypto'), {});
-    if (f.a !== f.b || f.a.length < 6) return fail(t('pinMismatch'), {});
+    if (f.a !== f.b || f.a.length < 6) { const offer = ui.sheet.offer; fail(t('pinMismatch'), {}); ui.sheet.offer = offer; return; }
     SALT = Core.rnd(16); KEY = await Core.deriveKey(f.a, SALT); await commit();
   },
   async import(f) {
