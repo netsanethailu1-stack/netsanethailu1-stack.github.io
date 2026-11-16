@@ -416,6 +416,16 @@ const Core = (() => {
     }
     return { g, all: rp.all, ledger, deleted: !rp.groups.length, draws, fp: await fingerprint(c.gid, c.ev), status, at, added };
   }
+  /* Read a payment confirmation: the SMS Telebirr or CBE sends, or the reply Mahiber's confirm page
+     writes. Returns what it could find: {amountC, ref, method}; each is 0 or '' when not found. */
+  function parsePaySms(text) {
+    const s = String(text || '').slice(0, 3000);
+    const a = s.match(/(?:ETB|Birr|ብር)\s*([\d,]+(?:\.\d{1,2})?)/i) || s.match(/([\d,]+(?:\.\d{1,2})?)\s*(?:ETB|Birr|ብር)/i);
+    const tok = [s.match(/\b(FT[A-Z0-9]{8,14})\b/), s.match(/(?:transaction\s*(?:number|no\.?|id)|ref(?:erence)?\.?\s*(?:number|no\.?)?|txn\s*id|የግብይት\s*ቁጥር(?:ዎ)?)\s*(?:is|፦|:|-)?\s*([A-Za-z0-9]{6,20})\b/i)]
+      .map(m => m ? m[1].toUpperCase() : '').find(x => /\d/.test(x) && /^[A-Z0-9]+$/.test(x)) || ''; /* a real number has a digit in it */
+    const method = /cbe\s*birr/i.test(s) ? 'CBE Birr' : /tele\s*birr|ቴሌብር/i.test(s) ? 'Telebirr' : /\bCBE\b|commercial bank|\bFT[A-Z0-9]{8,14}\b|ንግድ ባንክ|\bbank\b/i.test(s) ? 'bank' : '';
+    return { amountC: a ? toC(a[1]) : 0, ref: tok, method };
+  }
   const validKept = k => validCopy(k) && time(k.at) && str(k.name, 60) && ['share', 'equb', 'iddir'].includes(k.type);
 
   function validBackup(s) {
@@ -431,7 +441,7 @@ const Core = (() => {
     const all = replay(s.ledger).all, made = s.ledger.filter(e => e.data !== undefined && (e.type === 'create' || e.type === 'snapshot')).length;
     return all.size === made && [...all.values()].every(validGroup); /* every group in the file must load */
   }
-  return { sha, rnd, uid, toC, splitEqual, shareBalances, settleUp, newSeed, pickIndex, appendLedger, verifyLedger, replay, migrate, ethDate, deriveKey, seal, unseal, validState, validBackup, validGroup, parseVcf, packGroup, readPack, openCopy, fingerprint };
+  return { sha, rnd, uid, toC, splitEqual, shareBalances, settleUp, newSeed, pickIndex, appendLedger, verifyLedger, replay, migrate, ethDate, deriveKey, seal, unseal, validState, validBackup, validGroup, parseVcf, packGroup, readPack, openCopy, fingerprint, parsePaySms };
 })();
 if (typeof module !== 'undefined') module.exports = Core;
 </script>
@@ -489,6 +499,10 @@ en: {
  peopleN:'People ({0})', noPeople:'Nobody added yet. Tap + beside a contact, or type a name below.', notInContacts:'Not in your contacts? Type the name', addBtn:'Add', addedTag:'Added',
  pinOfferTitle:'Protect your records?', pinOffer:'With a PIN, everything in the app is encrypted on this phone, so nobody else who picks it up can read your records. You can also set it later in Settings.', later:'Later',
  joinTitle:'Also split these expenses with this person', joinHelp:'Ticked expenses are divided again to include them. Untick one they had no part in.', L_joinN:'Earlier expenses now shared with them: {0}',
+ pasteSms:'Paste the Telebirr or CBE message (optional)', pasteSmsEg:'Paste the SMS from the bank, or the confirmation the person sent you', smsFound:'Found: {0}.', smsNone:'No amount or transaction number found in that text. Type them below.',
+ smsDiff:'The message says {0}, but {1} is expected.', refUsed:'This transaction number is already recorded in this group.',
+ msgAfterLink:'After paying, confirm here with the transaction number:', paidAsk:'{0} asked you to pay for "{1}"', paidStep1:'1. Pay {0}', paidStep1Help:'Copy the number, open Telebirr or your bank app, and send the amount above.',
+ paidStep2:'2. Confirm your payment', paidSend:'Send the confirmation to {0}', paidMsg:'I paid {0} for "{1}".', paidClose:'Close and open Mahiber',
  payOn:'Ask them to pay on', allWays:'All', msgPayOne:'Please pay {0} on:',
  qrTitle:'QR pictures (optional)', qrHelp:'A screenshot of your own receive-money QR from the Telebirr or CBE app. It is attached only when you use "Send with QR picture".',
  numbersOpt:'Add account numbers too (optional)', numbersHelp:'Numbers go into the message as text. They help people who cannot scan a picture, and they are what the Telegram, WhatsApp and SMS buttons send.',
@@ -559,6 +573,10 @@ am: {
  peopleN:'ሰዎች ({0})', noPeople:'እስካሁን ማንም አልተጨመረም። ከአድራሻው አጠገብ + ይጫኑ፣ ወይም ከታች ስም ይጻፉ።', notInContacts:'በአድራሻዎ ውስጥ የለም? ስሙን ይጻፉ', addBtn:'ጨምር', addedTag:'ተጨምሯል',
  pinOfferTitle:'መዝገብዎ ይጠበቅ?', pinOffer:'በፒን፣ በመተግበሪያው ያለው ሁሉ በዚህ ስልክ ላይ ይመሰጠራል፤ ስልኩን ያነሳ ሌላ ሰው መዝገብዎን ማንበብ አይችልም። በኋላም በቅንብሮች ውስጥ ማዘጋጀት ይችላሉ።', later:'በኋላ',
  joinTitle:'እነዚህን ወጪዎች ከዚህ ሰው ጋርም አካፍል', joinHelp:'ምልክት የተደረገባቸው ወጪዎች እሱን ጨምሮ እንደገና ይካፈላሉ። ያልተሳተፈበትን ምልክቱን ያንሱ።', L_joinN:'አሁን ከእሱ ጋር የሚካፈሉ ቀደምት ወጪዎች፦ {0}',
+ pasteSms:'የቴሌብር ወይም የንግድ ባንክ መልእክቱን ይለጥፉ (አማራጭ)', pasteSmsEg:'ከባንኩ የመጣውን ኤስኤምኤስ፣ ወይም ሰውየው የላከልዎትን ማረጋገጫ ይለጥፉ', smsFound:'ተገኝቷል፦ {0}።', smsNone:'በጽሑፉ ውስጥ መጠን ወይም የግብይት ቁጥር አልተገኘም። ከታች ይጻፏቸው።',
+ smsDiff:'መልእክቱ {0} ይላል፤ የሚጠበቀው ግን {1} ነው።', refUsed:'ይህ የግብይት ቁጥር በዚህ ቡድን ውስጥ አስቀድሞ ተመዝግቧል።',
+ msgAfterLink:'ከከፈሉ በኋላ በግብይት ቁጥሩ እዚህ ያረጋግጡ፦', paidAsk:'{0} ለ"{1}" እንዲከፍሉ ጠይቀዋል', paidStep1:'1. ለ{0} ይክፈሉ', paidStep1Help:'ቁጥሩን ይቅዱ፣ ቴሌብርን ወይም የባንክ መተግበሪያዎን ይክፈቱ፣ ከላይ ያለውን መጠን ይላኩ።',
+ paidStep2:'2. ክፍያዎን ያረጋግጡ', paidSend:'ማረጋገጫውን ለ{0} ይላኩ', paidMsg:'ለ"{1}" {0} ከፍያለሁ።', paidClose:'ዝጋና ማህበርን ክፈት',
  payOn:'በዚህ እንዲከፍሉ ጠይቅ', allWays:'ሁሉም', msgPayOne:'እባክዎ ለ{0} በዚህ ይክፈሉ፦',
  qrTitle:'የQR ምስሎች (አማራጭ)', qrHelp:'ከቴሌብር ወይም ከንግድ ባንክ መተግበሪያ የራስዎ ገንዘብ መቀበያ QR ስክሪንሾት። "ከQR ምስል ጋር ላክ" ሲጠቀሙ ብቻ ይያያዛል።',
  numbersOpt:'የሂሳብ ቁጥሮችንም ጨምር (አማራጭ)', numbersHelp:'ቁጥሮች በመልእክቱ ውስጥ እንደ ጽሑፍ ይገባሉ። ምስል ስካን ማድረግ ለማይችሉ ሰዎች ይጠቅማሉ፤ የቴሌግራም፣ የዋትስአፕ እና የኤስኤምኤስ ቁልፎች የሚልኩትም እነሱን ነው።',
@@ -585,7 +603,7 @@ const METHODS = ['Telebirr', 'CBE Birr', 'bank', 'cash'];
 /* S is what is saved: {v:2, lang, me, contacts, ledger, kept}. GROUPS and ALL are rebuilt from the ledger.
    kept holds the last checked summary of each group someone else organises; it is not part of the ledger. */
 let lang = 'en', S = null, KEY = null, SALT = null, BOX = null, volatile = false, hiddenAt = 0, GROUPS = [], ALL = new Map();
-const ui = { view: 'home', gid: null, tab: 'exp', period: null, sheet: null, flash: '', chk: null };
+const ui = { view: 'home', gid: null, tab: 'exp', period: null, sheet: null, flash: '', chk: null, paidReq: null, paidVals: null };
 const LS = 'mahiber.v1';
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -668,14 +686,15 @@ function vWelcome() {
 }
 /* withQr: the message is sent together with the QR pictures, so it tells the receiver to scan them. */
 function reqMessage(g, from, amt, withQr, via) {
-  return [t('msgHello', mname(g, from), g.name, fmt(amt))].concat(withQr ? [t('msgQr')] : [], payLines(via), t('msgAfter')).join('\n');
+  /* the last lines lead to the confirm page, where the payer copies the number and reports the payment */
+  return [t('msgHello', mname(g, from), g.name, fmt(amt))].concat(withQr ? [t('msgQr')] : [], payLines(via), t('msgAfterLink'), paidLink(g, amt, via)).join('\n');
 }
 /* The ways the user can be paid: [key, button label, message line]. */
 function payWays() {
   const m = ME(), W = [];
-  if (m.telebirr) W.push(['tele', 'Telebirr', t('msgTele', m.telebirr)]);
-  if (m.cbe) W.push(['cbe', 'CBE', t('msgCbe', m.cbe) + (m.cbeName ? ' (' + m.cbeName + ')' : '')]);
-  if (m.bankName && m.bankAcct) W.push(['bank', m.bankName, m.bankName + ': ' + m.bankAcct]);
+  if (m.telebirr) W.push(['tele', 'Telebirr', t('msgTele', m.telebirr), m.telebirr]);
+  if (m.cbe) W.push(['cbe', 'CBE' + (m.cbeName ? ' (' + m.cbeName + ')' : ''), t('msgCbe', m.cbe) + (m.cbeName ? ' (' + m.cbeName + ')' : ''), m.cbe]);
+  if (m.bankName && m.bankAcct) W.push(['bank', m.bankName, m.bankName + ': ' + m.bankAcct, m.bankAcct]);
   return W;
 }
 /* How to pay the user, as message lines. via picks one way (tele, cbe, bank); without it all are listed. */
@@ -956,7 +975,7 @@ function sheetHtml() {
           ${contactsPanel(false)}` : ''}${err()}${btns(t('save'))}</form>`;
     case 'settle':
       return `<form data-form="settle"><h2>${t('pays', esc(mname(g, s.from)), esc(mname(g, s.to)))} · ${fmt(Number(s.amt))}</h2>
-        <label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
+        ${smsBox(Number(s.amt), v.sms)}<label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
         <label>${t('ref')}<input name="ref" maxlength="40" autocomplete="off" value="${esc(v.ref)}"></label>${err()}${btns(t('markPaid'))}</form>`;
     case 'request': {
       /* With a QR picture saved, the main button sends the message and the picture together.
@@ -964,9 +983,10 @@ function sheetHtml() {
       /* Step 1: which account the person should pay on. Step 2: how to send the message. */
       const ways = payWays(), via = ways.some(w => w[0] === s.via) ? s.via : '', qr = hasQr(), nums = ways.length > 0;
       const msg = reqMessage(g, s.from, Number(s.amt), qr && !nums, via), ph = intl((g.members.find(m => m.id === s.from) || {}).phone);
+      const short = w => w[0] === 'cbe' ? 'CBE' : w[1];
       const chip = (v, lab) => `<button type="button" class="sm ${via === v ? 'pri' : ''}" style="flex:1 1 0;min-width:0;padding:0 6px" aria-pressed="${via === v}" data-act="req-via" data-v="${esc(v)}">${esc(lab)}</button>`;
       return `<div class="box"><h2>${t('reqTitle', esc(mname(g, s.from)))}</h2>
-        ${ways.length > 1 ? `<div class="b">${t('payOn')}</div><div class="row" style="gap:6px">${ways.map(w => chip(w[0], w[1])).join('')}${chip('', t('allWays'))}</div>` : ''}
+        ${ways.length > 1 ? `<div class="b">${t('payOn')}</div><div class="row" style="gap:6px">${ways.map(w => chip(w[0], short(w))).join('')}${chip('', t('allWays'))}</div>` : ''}
         <textarea id="reqmsg" readonly aria-label="${t('request')}" style="min-height:150px">${esc(msg)}</textarea>
         ${nums ? `<div class="b">${t('sendWith')}</div><div class="share3"><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(tgTo(msg, ph))}">Telegram</a><a class="btn" data-act="req-sent" target="_blank" rel="noopener" href="${esc(waLink(msg, ph))}">WhatsApp</a><a class="btn" data-act="req-sent" href="${esc('sms:' + (ph || '') + '?&body=' + encodeURIComponent(msg))}">${t('viaSms')}</a></div>` : ''}
         ${qr ? qrStrip(nums) : ''}<button data-act="req-share">${t(qr ? 'sendQr' : 'shareVia')}</button><button data-act="req-copy">${t('copy')}</button><button data-act="close">${t('close')}</button></div>`;
@@ -979,7 +999,7 @@ function sheetHtml() {
     }
     case 'pay':
       return `<form data-form="pay"><h2>${esc(mname(g, s.mid))} · ${fmt(g.amountC)}</h2><div class="note">${t('noHold')}</div>
-        <label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
+        ${smsBox(g.amountC, v.sms)}<label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
         <label>${t('ref')}<input name="ref" maxlength="40" autocomplete="off" value="${esc(v.ref)}"></label>${err()}${btns(t('record'))}</form>`;
     case 'draw':
       return `<form data-form="draw"><h2>${t('runDraw')}</h2><div class="note">${t('mixHelp')}</div>
@@ -1016,10 +1036,69 @@ function sheetHtml() {
   return '';
 }
 
+/* Box for pasting the bank's SMS (or the payer's confirmation); the form's method and transaction
+   number are filled from it as it is typed. expC is the amount expected, in cents. */
+const smsBox = (expC, val) => `<label>${t('pasteSms')}<textarea id="smsin" name="sms" data-exp="${esc(expC)}" style="min-height:76px" placeholder="${t('pasteSmsEg')}">${esc(val)}</textarea></label><div id="smsout" class="mut" role="status"></div>`;
+function readSms(el) {
+  const fm = el.form, out = $('#smsout'), r = Core.parsePaySms(el.value), exp = Number(el.dataset.exp) || 0; if (!fm || !out) return;
+  if (r.method && fm.elements.method) fm.elements.method.value = r.method;
+  if (r.ref && fm.elements.ref) fm.elements.ref.value = r.ref;
+  const found = [r.amountC ? fmt(r.amountC) : '', r.method ? mlabel(r.method) : '', r.ref].filter(Boolean).join(' · ');
+  const diff = r.amountC && exp && r.amountC !== exp;
+  out.className = diff ? 'warn' : found ? 'note' : 'mut';
+  out.textContent = !el.value.trim() ? '' : !found ? t('smsNone') : t('smsFound', found) + (diff ? ' ' + t('smsDiff', fmt(r.amountC), fmt(exp)) : '');
+}
+function snapPaid() { const f = $('form[data-form="paidform"]'); if (!f) return; ui.paidVals = { sms: f.elements.sms.value, method: f.elements.method.value, ref: f.elements.ref.value }; }
+/* A transaction number may be recorded once in a group, so one payment cannot be counted twice. */
+function usedRef(g, ref) {
+  const same = x => x && x.ref && String(x.ref).toUpperCase() === String(ref).toUpperCase();
+  return !!ref && ((g.settlements || []).some(same) || Object.keys(g.pay || {}).some(k => Object.keys(g.pay[k]).some(id => same(g.pay[k][id]))));
+}
+
+/* ---------- the payer's confirm page ----------
+   A payment request carries a link ending in #paid=…, with who asked, for what, how much and the
+   numbers to pay on. Opening it shows this page, with no sign-up and nothing saved: the payer copies
+   a number, pays in Telebirr or CBE, then sends back a confirmation with the transaction number. */
+const b64e = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+function paidLink(g, amt, via) {
+  const all = payWays(), W = all.some(w => w[0] === via) ? all.filter(w => w[0] === via) : all, m = ME();
+  return location.origin + location.pathname + '#paid=' + b64e(JSON.stringify({ n: m.name, g: g.name, a: amt, p: m.telebirr ? intl(m.telebirr) : '', w: W.map(w => [w[1], w[3]]) }));
+}
+function readPaid() {
+  try {
+    const m = location.hash.match(/^#paid=([A-Za-z0-9_-]{8,1500})$/); if (!m) return null;
+    const o = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/')))));
+    const str = (x, n) => typeof x === 'string' && x.length <= n;
+    if (!o || !str(o.n, 60) || !o.n || !str(o.g, 60) || !Number.isSafeInteger(o.a) || o.a <= 0 || !(o.p === '' || /^\+?\d{9,13}$/.test(o.p)) ||
+      !Array.isArray(o.w) || o.w.length > 3 || !o.w.every(x => Array.isArray(x) && x.length === 2 && str(x[0], 40) && str(x[1], 40))) return null;
+    return { n: o.n, g: o.g, a: o.a, p: o.p, w: o.w };
+  } catch (e) { return null; }
+}
+function vPaid() {
+  const o = ui.paidReq, v = ui.paidVals || {};
+  return `<header><img class="logo" src="icon.svg" alt=""><h1 class="brand">Mahiber <span class="sub">ማህበር</span></h1>
+    <button class="sm" data-act="paid-lang" aria-label="${t('language')}">${lang === 'en' ? 'አማርኛ' : 'English'}</button></header><main>
+    <div class="card hero"><span class="soft">${esc(t('paidAsk', o.n, o.g))}</span><span class="big">${fmt(o.a)}</span></div>
+    ${o.w.length ? `<div class="card"><div class="b">${esc(t('paidStep1', o.n))}</div>
+      ${o.w.map(w => `<div class="row"><div class="grow"><div class="mut">${esc(w[0])}</div><div class="b mono">${esc(w[1])}</div></div><button class="sm pri" data-act="copy" data-text="${esc(w[1])}">${t('copy')}</button></div>`).join('')}
+      <div class="mut">${t('paidStep1Help')}</div></div>` : ''}
+    <form class="card" data-form="paidform"><div class="b">${t('paidStep2')}</div>
+      ${smsBox(o.a, v.sms)}
+      <label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
+      <label>${t('ref')}<input name="ref" maxlength="40" autocomplete="off" value="${esc(v.ref)}"></label>
+      ${ui.flash ? `<div class="err" role="alert">${esc(ui.flash)}</div>` : ''}
+      <div class="b">${esc(t('paidSend', o.n))}</div>
+      <div class="share3">${[['tg', 'Telegram'], ['wa', 'WhatsApp'], ['sms', t('viaSms')]].map(c => `<button type="button" class="sm" data-act="paid-send" data-ch="${c[0]}">${c[1]}</button>`).join('')}</div>
+      <button type="button" data-act="paid-send" data-ch="copy">${t('copy')}</button></form>
+    <button class="full" data-act="paid-close">${t('paidClose')}</button>
+    <div class="note">${t('promise')}</div></main>`;
+}
+
 function render() {
   document.documentElement.lang = lang;
   let html;
-  if (ui.view === 'lock') html = vLock();
+  if (ui.paidReq) html = vPaid();
+  else if (ui.view === 'lock') html = vLock();
   else if (!ME().name) { ui.sheet = null; html = vWelcome(); }
   else if (ui.view === 'history') html = vHistory();
   else if (ui.view === 'settings') html = vSettings();
@@ -1065,6 +1144,21 @@ const A = {
   request(d) { ui.sheet = hasPay() ? { kind: 'request', from: d.from, amt: d.amt } : { kind: 'me', err: t(meErr(ME(), true) || 'needPay'), back: { kind: 'request', from: d.from, amt: d.amt } }; render(); },
   async 'req-sent'() { await markReq(); },
   'req-via'(d) { ui.sheet.via = d.v; render(); },
+  copy(d) { copyText(String(d.text || '')); },
+  /* the payer's confirm page */
+  'paid-lang'() { lang = lang === 'en' ? 'am' : 'en'; lsSet('mahiber.lang', lang); snapPaid(); render(); },
+  'paid-close'() { ui.paidReq = null; ui.paidVals = null; try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} render(); },
+  'paid-send'(d) {
+    const o = ui.paidReq; snapPaid(); const v = ui.paidVals, method = METHODS.includes(v.method) ? v.method : 'cash', ref = String(v.ref || '').trim().toUpperCase().slice(0, 40);
+    if (method !== 'cash' && !/^[A-Z0-9]{6,40}$/.test(ref)) { ui.flash = t('refNeed'); return render(); }
+    /* the second line is what the organiser's app reads back: method, transaction number, amount */
+    const how = { Telebirr: 'Telebirr', 'CBE Birr': 'CBE Birr', bank: 'Bank', cash: 'Cash' }[method];
+    const msg = t('paidMsg', fmt(o.a), o.g) + '\n' + how + (ref ? ' · Ref: ' + ref : '') + ' · ETB ' + (o.a / 100).toFixed(2);
+    if (d.ch === 'tg') window.open(tgTo(msg, o.p), '_blank', 'noopener');
+    else if (d.ch === 'wa') window.open(waLink(msg, o.p), '_blank', 'noopener');
+    else if (d.ch === 'sms') location.href = 'sms:' + o.p + '?&body=' + encodeURIComponent(msg);
+    else copyText(msg);
+  },
   async 'req-share'() { const msg = $('#reqmsg').value; let ok = false; try { ok = await shareMsg(msg); } catch (e) { if (e && e.name === 'AbortError') return; } await markReq(); if (!ok) copyText(msg); },
   async 'qr-del'(d) { if (!QRS.some(q => q[0] === d.k)) return; snapMe(); delete ME()[d.k]; await persist(); keepScroll(render); },
   async 'req-copy'() { const msg = $('#reqmsg').value.split('\n').filter(l => l !== t('msgQr')).join('\n'); await markReq(); copyText(msg); },
@@ -1206,6 +1300,7 @@ const F = {
   async settle(f) {
     const g = group(), s = ui.sheet, amt = Number(s.amt), method = METHODS.includes(f.method) ? f.method : 'cash', ref = f.ref.trim();
     if (method !== 'cash' && !ref) return fail(t('refNeed'), f);
+    if (usedRef(g, ref)) return fail(t('refUsed'), f);
     if (!Number.isSafeInteger(amt) || amt <= 0 || !g.members.some(m => m.id === s.from) || !g.members.some(m => m.id === s.to)) return;
     await emit('settle', g.id, { from: s.from, to: s.to, amountC: amt, method, ref }); await commit();
   },
@@ -1225,6 +1320,7 @@ const F = {
   async pay(f) {
     const g = group(), s = ui.sheet, method = METHODS.includes(f.method) ? f.method : 'cash', ref = f.ref.trim();
     if (method !== 'cash' && !ref) return fail(t('refNeed'), f);
+    if (usedRef(g, ref)) return fail(t('refUsed'), f);
     if (!g.members.some(m => m.id === s.mid) || pays(g, s.key)[s.mid]) return;
     await emit('pay', g.id, { key: s.key, mid: s.mid, method, ref }); await commit();
   },
@@ -1262,6 +1358,7 @@ const F = {
     if (key) { KEY = key; SALT = salt; } /* a locked backup keeps its PIN */
     lang = S.lang === 'am' ? 'am' : 'en'; ui.view = 'home'; await commit();
   },
+  paidform() { /* Enter in the confirm page does nothing; the send buttons do the work */ },
   async check(f) {
     const c = await Core.readPack(f.code), kept = c && (S.kept || []).find(k => k.gid === c.gid);
     const r = c && await Core.openCopy(c, kept);
@@ -1319,6 +1416,7 @@ document.addEventListener('input', ev => {
   /* The CBE account is normally in the user's own name: fill the holder name from "Your name"
      once an account number is typed, and stop as soon as the user edits the holder name. */
   const fm = ev.target.form, el = ev.target;
+  if (el.id === 'smsin') return readSms(el);
   if (fm && fm.elements.cbeName && ['name', 'cbe', 'cbeName'].includes(el.name)) {
     const h = fm.elements.cbeName;
     if (el === h) h.dataset.auto = '';
@@ -1343,6 +1441,8 @@ function keepCopy(k, v) { try { if (localStorage.getItem(k) == null) localStorag
 (async function boot() {
   try { localStorage.setItem('mahiber.t', '1'); localStorage.removeItem('mahiber.t'); } catch (e) { volatile = true; }
   lang = lsGet('mahiber.lang') === 'am' ? 'am' : 'en';
+  ui.paidReq = readPaid(); /* opened from a payment request link: show the confirm page first */
+  window.addEventListener('hashchange', () => { const p = readPaid(); if (p) { ui.paidReq = p; ui.paidVals = null; render(); } });
   const raw = lsGet(LS); let box = null; try { box = JSON.parse(raw); } catch (e) {}
   if (box && box.enc) { BOX = box; ui.view = 'lock'; }
   else if (box && Core.validState(box.data)) {
