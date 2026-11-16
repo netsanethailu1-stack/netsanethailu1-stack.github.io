@@ -1060,7 +1060,9 @@ const A = {
   async setlang(d) { lang = d.l; await persist(); render(); },
   new(d) { ui.sheet = { kind: 'new', type: d.type }; render(); },
   sheet(d) { ui.sheet = Object.assign({}, { ...d }); render(); },
-  request(d) { ui.sheet = hasPay() ? { kind: 'request', from: d.from, amt: d.amt } : { kind: 'me', err: t('needPay'), back: { kind: 'request', from: d.from, amt: d.amt } }; render(); },
+  /* without usable payment details, open them first and say exactly what is wrong (a saved number
+     from an older version may fail today's checks) */
+  request(d) { ui.sheet = hasPay() ? { kind: 'request', from: d.from, amt: d.amt } : { kind: 'me', err: t(meErr(ME(), true) || 'needPay'), back: { kind: 'request', from: d.from, amt: d.amt } }; render(); },
   async 'req-sent'() { await markReq(); },
   'req-via'(d) { ui.sheet.via = d.v; render(); },
   async 'req-share'() { const msg = $('#reqmsg').value; let ok = false; try { ok = await shareMsg(msg); } catch (e) { if (e && e.name === 'AbortError') return; } await markReq(); if (!ok) copyText(msg); },
