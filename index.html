@@ -501,7 +501,7 @@ en: {
  joinTitle:'Also split these expenses with this person', joinHelp:'Ticked expenses are divided again to include them. Untick one they had no part in.', L_joinN:'Earlier expenses now shared with them: {0}',
  pasteSms:'Paste the Telebirr or CBE message (optional)', pasteSmsEg:'Paste the SMS from the bank, or the confirmation the person sent you', smsFound:'Found: {0}.', smsNone:'No amount or transaction number found in that text. Type them below.',
  smsDiff:'The message says {0}, but {1} is expected.', refUsed:'This transaction number is already recorded in this group.',
- msgAfterLink:'After paying, confirm here with the transaction number:', paidAsk:'{0} asked you to pay for "{1}"', paidStep1:'1. Pay {0}', paidStep1Help:'Copy the number, open Telebirr or your bank app, and send the amount above.',
+ msgDue:'Hello {0}, your contribution to "{1}" for {3} is {2}.', msgAfterLink:'After paying, confirm here with the transaction number:', paidAsk:'{0} asked you to pay for "{1}"', paidStep1:'1. Pay {0}', paidStep1Help:'Copy the number, open Telebirr or your bank app, and send the amount above.',
  paidStep2:'2. Confirm your payment', paidSend:'Send the confirmation to {0}', paidMsg:'I paid {0} for "{1}".', paidClose:'Close and open Mahiber',
  payOn:'Ask them to pay on', allWays:'All', msgPayOne:'Please pay {0} on:',
  qrTitle:'QR pictures (optional)', qrHelp:'A screenshot of your own receive-money QR from the Telebirr or CBE app. It is attached only when you use "Send with QR picture".',
@@ -575,7 +575,7 @@ am: {
  joinTitle:'እነዚህን ወጪዎች ከዚህ ሰው ጋርም አካፍል', joinHelp:'ምልክት የተደረገባቸው ወጪዎች እሱን ጨምሮ እንደገና ይካፈላሉ። ያልተሳተፈበትን ምልክቱን ያንሱ።', L_joinN:'አሁን ከእሱ ጋር የሚካፈሉ ቀደምት ወጪዎች፦ {0}',
  pasteSms:'የቴሌብር ወይም የንግድ ባንክ መልእክቱን ይለጥፉ (አማራጭ)', pasteSmsEg:'ከባንኩ የመጣውን ኤስኤምኤስ፣ ወይም ሰውየው የላከልዎትን ማረጋገጫ ይለጥፉ', smsFound:'ተገኝቷል፦ {0}።', smsNone:'በጽሑፉ ውስጥ መጠን ወይም የግብይት ቁጥር አልተገኘም። ከታች ይጻፏቸው።',
  smsDiff:'መልእክቱ {0} ይላል፤ የሚጠበቀው ግን {1} ነው።', refUsed:'ይህ የግብይት ቁጥር በዚህ ቡድን ውስጥ አስቀድሞ ተመዝግቧል።',
- msgAfterLink:'ከከፈሉ በኋላ በግብይት ቁጥሩ እዚህ ያረጋግጡ፦', paidAsk:'{0} ለ"{1}" እንዲከፍሉ ጠይቀዋል', paidStep1:'1. ለ{0} ይክፈሉ', paidStep1Help:'ቁጥሩን ይቅዱ፣ ቴሌብርን ወይም የባንክ መተግበሪያዎን ይክፈቱ፣ ከላይ ያለውን መጠን ይላኩ።',
+ msgDue:'ሰላም {0}፣ ለ"{1}" የ{3} መዋጮዎ {2} ነው።', msgAfterLink:'ከከፈሉ በኋላ በግብይት ቁጥሩ እዚህ ያረጋግጡ፦', paidAsk:'{0} ለ"{1}" እንዲከፍሉ ጠይቀዋል', paidStep1:'1. ለ{0} ይክፈሉ', paidStep1Help:'ቁጥሩን ይቅዱ፣ ቴሌብርን ወይም የባንክ መተግበሪያዎን ይክፈቱ፣ ከላይ ያለውን መጠን ይላኩ።',
  paidStep2:'2. ክፍያዎን ያረጋግጡ', paidSend:'ማረጋገጫውን ለ{0} ይላኩ', paidMsg:'ለ"{1}" {0} ከፍያለሁ።', paidClose:'ዝጋና ማህበርን ክፈት',
  payOn:'በዚህ እንዲከፍሉ ጠይቅ', allWays:'ሁሉም', msgPayOne:'እባክዎ ለ{0} በዚህ ይክፈሉ፦',
  qrTitle:'የQR ምስሎች (አማራጭ)', qrHelp:'ከቴሌብር ወይም ከንግድ ባንክ መተግበሪያ የራስዎ ገንዘብ መቀበያ QR ስክሪንሾት። "ከQR ምስል ጋር ላክ" ሲጠቀሙ ብቻ ይያያዛል።',
@@ -685,9 +685,12 @@ function vWelcome() {
     <div class="note">${t('promise')}<br>${t('onDevice')}</div></main>`;
 }
 /* withQr: the message is sent together with the QR pictures, so it tells the receiver to scan them. */
-function reqMessage(g, from, amt, withQr, via) {
-  /* the last lines lead to the confirm page, where the payer copies the number and reports the payment */
-  return [t('msgHello', mname(g, from), g.name, fmt(amt))].concat(withQr ? [t('msgQr')] : [], payLines(via), t('msgAfterLink'), paidLink(g, amt, via)).join('\n');
+const PKEYRE = /^(r\d{1,3}|E\d{4}-\d{2})$/;
+function reqMessage(g, from, amt, withQr, via, key) {
+  /* key: an equb round or iddir month, named in the message. The last lines lead to the confirm
+     page, where the payer copies the number and reports the payment. */
+  const hello = key ? t('msgDue', mname(g, from), g.name, fmt(amt), keyLabel(g, key)) : t('msgHello', mname(g, from), g.name, fmt(amt));
+  return [hello].concat(withQr ? [t('msgQr')] : [], payLines(via), t('msgAfterLink'), paidLink(g, amt, via, key)).join('\n');
 }
 /* The ways the user can be paid: [key, button label, message line]. */
 function payWays() {
@@ -885,7 +888,7 @@ function memberRows(g, key) {
   return `<div class="card list">${g.members.map(m => { const x = p[m.id]; return `<div class="row"><div class="grow"><div class="b">${esc(m.name)}</div>
     <div class="mut">${x ? esc(mlabel(x.method)) + (x.ref ? ' · ' + esc(x.ref) : '') : t('notPaid')}</div></div>
     ${x ? `<span class="pill p-ok">${t('paid')}</span><button class="sm link" data-act="ask-undo" data-mid="${esc(m.id)}" data-key="${esc(key)}">${t('undo')}</button>`
-        : `<button class="sm pri" data-act="sheet" data-kind="pay" data-mid="${esc(m.id)}" data-key="${esc(key)}">${t('record')}</button>`}</div>`; }).join('')}</div>`;
+        : `<button class="sm amb" data-act="request" data-from="${esc(m.id)}" data-amt="${esc(g.amountC)}" data-key="${esc(key)}">${t('request')}</button><button class="sm pri" data-act="sheet" data-kind="pay" data-mid="${esc(m.id)}" data-key="${esc(key)}">${t('record')}</button>`}</div>`; }).join('')}</div>`;
 }
 function vEqub(g) {
   const n = g.members.length, key = 'r' + g.round, paidN = Object.keys(pays(g, key)).length, d = g.draws[g.round] || {};
@@ -959,7 +962,7 @@ function sheetHtml() {
         ${ty === 'equb' ? `<label>${t('freq')}<select name="freq">${['daily', 'weekly', 'monthly'].map(f => `<option value="${f}" ${(v.freq || 'weekly') === f ? 'selected' : ''}>${t(f)}</option>`).join('')}</select></label>` : ''}
         ${ty === 'share' ? `<label>${t('totalOpt')}<input name="total" inputmode="decimal" value="${esc(v.total)}"></label>
         <div class="checks" style="grid-template-columns:1fr"><label><input type="checkbox" name="includeMe" ${s.vals && !v.includeMe ? '' : 'checked'}>${t('includeMe')}</label></div>` : ''}
-        ${ty === 'share' ? peoplePicker(v) : `<label>${t('members')}<textarea name="members" id="people" required>${esc(v.members)}</textarea></label>`}
+        ${peoplePicker(v)}
         ${err()}${btns(t('create'))}</form>`;
     }
     case 'expense':
@@ -969,10 +972,10 @@ function sheetHtml() {
         <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;font-size:14px;padding:0">${t('splitAmong')}</legend><div class="checks">${g.members.map(m => `<label><input type="checkbox" name="among" value="${esc(m.id)}" checked>${esc(mname(g, m.id))}</label>`).join('')}</div></fieldset>${err()}${btns(t('save'))}</form>`;
     case 'person':
       return `<form data-form="person"><h2>${t(g.type === 'share' ? 'addPerson' : 'addMember')}</h2><label>${t('name')}<input name="name" id="pname" maxlength="60" value="${esc(v.name)}" required></label>
-        ${g.type === 'share' ? `<label>${t('phone')}<input name="phone" id="pphone" inputmode="tel" maxlength="20" value="${esc(v.phone)}"></label>
-          ${g.expenses.some(e => !e.void) ? `<fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;font-size:14px;padding:0">${t('joinTitle')}</legend><div class="mut">${t('joinHelp')}</div>
+        <label>${t('phone')}<input name="phone" id="pphone" inputmode="tel" maxlength="20" value="${esc(v.phone)}"></label>
+          ${g.type === 'share' && g.expenses.some(e => !e.void) ? `<fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;font-size:14px;padding:0">${t('joinTitle')}</legend><div class="mut">${t('joinHelp')}</div>
             <div class="checks" style="grid-template-columns:1fr">${g.expenses.filter(e => !e.void).map(e => `<label><input type="checkbox" name="join" value="${esc(e.id)}" checked>${esc(e.what)} · ${fmt(e.amountC)}</label>`).join('')}</div></fieldset>` : ''}
-          ${contactsPanel(false)}` : ''}${err()}${btns(t('save'))}</form>`;
+          ${contactsPanel(false)}${err()}${btns(t('save'))}</form>`;
     case 'settle':
       return `<form data-form="settle"><h2>${t('pays', esc(mname(g, s.from)), esc(mname(g, s.to)))} · ${fmt(Number(s.amt))}</h2>
         ${smsBox(Number(s.amt), v.sms)}<label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
@@ -982,7 +985,7 @@ function sheetHtml() {
          The chat-app links can only carry text, so they are offered only when there are numbers to send. */
       /* Step 1: which account the person should pay on. Step 2: how to send the message. */
       const ways = payWays(), via = ways.some(w => w[0] === s.via) ? s.via : '', qr = hasQr(), nums = ways.length > 0;
-      const msg = reqMessage(g, s.from, Number(s.amt), qr && !nums, via), ph = intl((g.members.find(m => m.id === s.from) || {}).phone);
+      const msg = reqMessage(g, s.from, Number(s.amt), qr && !nums, via, PKEYRE.test(s.key) ? s.key : ''), ph = intl((g.members.find(m => m.id === s.from) || {}).phone);
       const short = w => w[0] === 'cbe' ? 'CBE' : w[1];
       const chip = (v, lab) => `<button type="button" class="sm ${via === v ? 'pri' : ''}" style="flex:1 1 0;min-width:0;padding:0 6px" aria-pressed="${via === v}" data-act="req-via" data-v="${esc(v)}">${esc(lab)}</button>`;
       return `<div class="box"><h2>${t('reqTitle', esc(mname(g, s.from)))}</h2>
@@ -1060,9 +1063,9 @@ function usedRef(g, ref) {
    numbers to pay on. Opening it shows this page, with no sign-up and nothing saved: the payer copies
    a number, pays in Telebirr or CBE, then sends back a confirmation with the transaction number. */
 const b64e = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-function paidLink(g, amt, via) {
+function paidLink(g, amt, via, key) {
   const all = payWays(), W = all.some(w => w[0] === via) ? all.filter(w => w[0] === via) : all, m = ME();
-  return location.origin + location.pathname + '#paid=' + b64e(JSON.stringify({ n: m.name, g: g.name, a: amt, p: m.telebirr ? intl(m.telebirr) : '', w: W.map(w => [w[1], w[3]]) }));
+  return location.origin + location.pathname + '#paid=' + b64e(JSON.stringify({ n: m.name, g: (key ? g.name + ' · ' + keyLabel(g, key) : g.name).slice(0, 60), a: amt, p: m.telebirr ? intl(m.telebirr) : '', w: W.map(w => [w[1], w[3]]) }));
 }
 function readPaid() {
   try {
@@ -1141,7 +1144,8 @@ const A = {
   sheet(d) { ui.sheet = Object.assign({}, { ...d }); render(); },
   /* without usable payment details, open them first and say exactly what is wrong (a saved number
      from an older version may fail today's checks) */
-  request(d) { ui.sheet = hasPay() ? { kind: 'request', from: d.from, amt: d.amt } : { kind: 'me', err: t(meErr(ME(), true) || 'needPay'), back: { kind: 'request', from: d.from, amt: d.amt } }; render(); },
+  /* key: the equb round or iddir month the contribution is for; a share has none */
+  request(d) { const rq = { kind: 'request', from: d.from, amt: d.amt, key: d.key || '' }; ui.sheet = hasPay() ? rq : { kind: 'me', err: t(meErr(ME(), true) || 'needPay'), back: rq }; render(); },
   async 'req-sent'() { await markReq(); },
   'req-via'(d) { ui.sheet.via = d.v; render(); },
   copy(d) { copyText(String(d.text || '')); },
@@ -1237,8 +1241,9 @@ const A = {
   lock() { if (KEY && !volatile) doLock(); },
 };
 async function markReq() {
-  const g = group(), s = ui.sheet; g.requests = g.requests || {};
-  if (!g.requests[s.from]) await emit('request', g.id, { from: s.from, amountC: Number(s.amt) });
+  const g = group(), s = ui.sheet;
+  /* only a share keeps a "requested" mark; an equb or iddir request is just a message */
+  if (g.type === 'share' && !(g.requests || {})[s.from]) await emit('request', g.id, { from: s.from, amountC: Number(s.amt) });
   await commit();
 }
 const keyLabel = (g, key) => key[0] === 'r' ? t('round', key.slice(1), g.members.length) : plabel({ y: Number(key.slice(1, 5)), m: Number(key.slice(6)) });
