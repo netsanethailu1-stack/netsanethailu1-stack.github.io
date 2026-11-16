@@ -296,7 +296,13 @@ const Core = (() => {
         }
         break;
       case 'request': if (g.requests && has(d.from)) g.requests[d.from] = at; break;
-      case 'member': if (isId(d.id) && !has(d.id)) g.members.push({ id: d.id, name: d.name, phone: d.phone }); break;
+      case 'member':
+        if (isId(d.id) && !has(d.id)) {
+          g.members.push({ id: d.id, name: d.name, phone: d.phone });
+          /* join: earlier expenses this person also shares, so those are split again with them */
+          if (g.expenses && Array.isArray(d.join)) for (const x of g.expenses) if (!x.void && d.join.includes(x.id) && !x.among.includes(d.id)) x.among.push(d.id);
+        }
+        break;
       case 'pay':
         if (g.pay && PKEY.test(d.key) && has(d.mid)) { const p = g.pay[d.key] = g.pay[d.key] || {}; if (!p[d.mid]) p[d.mid] = { method: d.method, ref: d.ref, at }; }
         break;
@@ -481,6 +487,7 @@ en: {
  L_req:'Payment request prepared for {0}: {1}', L_snapshot:'Records of {0} moved to the new history format',
  badCbe:'A CBE account number has 13 digits and starts with 1000.', badTele:'Enter a mobile number like 0911223344.',
  peopleN:'People ({0})', noPeople:'Nobody added yet. Tap + beside a contact, or type a name below.', notInContacts:'Not in your contacts? Type the name', addBtn:'Add', addedTag:'Added',
+ joinTitle:'Also split these expenses with this person', joinHelp:'Ticked expenses are divided again to include them. Untick one they had no part in.', L_joinN:'Earlier expenses now shared with them: {0}',
  qrTitle:'My QR pictures (optional)', qrHelp:'In the Telebirr or CBE app, open your own receive-money QR, take a screenshot and choose it here. It is attached to payment requests so friends can scan it and pay.',
  qrTele:'Telebirr QR', qrCbe:'CBE QR', choosePic:'Choose picture', qrBad:'That file is not a picture the app can use.',
  qrNote:'"Send with another app" also attaches your QR pictures. The Telegram, WhatsApp and SMS buttons send the text only.',
@@ -546,6 +553,7 @@ am: {
  L_req:'ለ{0} የክፍያ ጥያቄ ተዘጋጀ፦ {1}', L_snapshot:'የ{0} መዝገብ ወደ አዲሱ የታሪክ አቀማመጥ ተዛውሯል',
  badCbe:'የንግድ ባንክ ሂሳብ ቁጥር 13 አሃዝ ነው፤ በ1000 ይጀምራል።', badTele:'እንደ 0911223344 ያለ የሞባይል ቁጥር ያስገቡ።',
  peopleN:'ሰዎች ({0})', noPeople:'እስካሁን ማንም አልተጨመረም። ከአድራሻው አጠገብ + ይጫኑ፣ ወይም ከታች ስም ይጻፉ።', notInContacts:'በአድራሻዎ ውስጥ የለም? ስሙን ይጻፉ', addBtn:'ጨምር', addedTag:'ተጨምሯል',
+ joinTitle:'እነዚህን ወጪዎች ከዚህ ሰው ጋርም አካፍል', joinHelp:'ምልክት የተደረገባቸው ወጪዎች እሱን ጨምሮ እንደገና ይካፈላሉ። ያልተሳተፈበትን ምልክቱን ያንሱ።', L_joinN:'አሁን ከእሱ ጋር የሚካፈሉ ቀደምት ወጪዎች፦ {0}',
  qrTitle:'የእኔ የQR ምስሎች (አማራጭ)', qrHelp:'በቴሌብር ወይም በንግድ ባንክ መተግበሪያ የራስዎን ገንዘብ መቀበያ QR ይክፈቱ፣ ስክሪንሾት ያንሱ እና እዚህ ይምረጡት። ጓደኞችዎ ስካን አድርገው እንዲከፍሉ ከክፍያ ጥያቄ ጋር ይያያዛል።',
  qrTele:'የቴሌብር QR', qrCbe:'የንግድ ባንክ QR', choosePic:'ምስል ምረጥ', qrBad:'ይህ ፋይል መተግበሪያው ሊጠቀምበት የሚችል ምስል አይደለም።',
  qrNote:'"በሌላ መተግበሪያ ላክ" የQR ምስሎችዎንም ያያይዛል። የቴሌግራም፣ የዋትስአፕ እና የኤስኤምኤስ ቁልፎች ጽሑፉን ብቻ ይልካሉ።',
@@ -687,7 +695,7 @@ function evText(e, all = ALL, nm = mname) {
       case 'void': { const x = (g.expenses || []).find(y => y.id === d.id) || {}; return t('L_void', x.what || '?', fmt(x.amountC || 0)); }
       case 'settle': return t('L_settle', n(d.from), n(d.to), fmt(d.amountC)) + ' (' + how() + ')';
       case 'request': return t('L_req', n(d.from), fmt(d.amountC));
-      case 'member': return t('L_member', d.name, g.name);
+      case 'member': return t('L_member', d.name, g.name) + (Array.isArray(d.join) && d.join.length ? '. ' + t('L_joinN', d.join.length) : '');
       case 'pay': return t('L_pay', n(d.mid), fmt(g.amountC), how(), keyLabel(g, d.key));
       case 'undo': return t('L_undo', n(d.mid), keyLabel(g, d.key));
       case 'commit': return t('L_commit', d.round, d.commit);
@@ -912,7 +920,10 @@ function sheetHtml() {
         <fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;font-size:14px;padding:0">${t('splitAmong')}</legend><div class="checks">${g.members.map(m => `<label><input type="checkbox" name="among" value="${esc(m.id)}" checked>${esc(mname(g, m.id))}</label>`).join('')}</div></fieldset>${err()}${btns(t('save'))}</form>`;
     case 'person':
       return `<form data-form="person"><h2>${t(g.type === 'share' ? 'addPerson' : 'addMember')}</h2><label>${t('name')}<input name="name" id="pname" maxlength="60" value="${esc(v.name)}" required></label>
-        ${g.type === 'share' ? `<label>${t('phone')}<input name="phone" id="pphone" inputmode="tel" maxlength="20" value="${esc(v.phone)}"></label>${contactsPanel(false)}` : ''}${err()}${btns(t('save'))}</form>`;
+        ${g.type === 'share' ? `<label>${t('phone')}<input name="phone" id="pphone" inputmode="tel" maxlength="20" value="${esc(v.phone)}"></label>
+          ${g.expenses.some(e => !e.void) ? `<fieldset style="border:0;padding:0;margin:0"><legend style="font-weight:600;font-size:14px;padding:0">${t('joinTitle')}</legend><div class="mut">${t('joinHelp')}</div>
+            <div class="checks" style="grid-template-columns:1fr">${g.expenses.filter(e => !e.void).map(e => `<label><input type="checkbox" name="join" value="${esc(e.id)}" checked>${esc(e.what)} · ${fmt(e.amountC)}</label>`).join('')}</div></fieldset>` : ''}
+          ${contactsPanel(false)}` : ''}${err()}${btns(t('save'))}</form>`;
     case 'settle':
       return `<form data-form="settle"><h2>${t('pays', esc(mname(g, s.from)), esc(mname(g, s.to)))} · ${fmt(Number(s.amt))}</h2>
         <label>${t('method')}<select name="method">${METHODS.map(m => `<option value="${m}" ${v.method === m ? 'selected' : ''}>${esc(mlabel(m))}</option>`).join('')}</select></label>
@@ -1151,7 +1162,10 @@ const F = {
   },
   async person(f) {
     const g = group(), name = f.name.trim(); if (!name) return fail(t('needName'), f);
-    await emit('member', g.id, { id: Core.uid(), name, phone: String(f.phone || '').replace(/[\s-]/g, '') }); await commit();
+    const data = { id: Core.uid(), name, phone: String(f.phone || '').replace(/[\s-]/g, '') };
+    const join = g.type === 'share' ? (f.join || []).filter(id => g.expenses.some(e => e.id === id && !e.void)) : [];
+    if (join.length) data.join = join;
+    await emit('member', g.id, data); await commit();
   },
   async settle(f) {
     const g = group(), s = ui.sheet, amt = Number(s.amt), method = METHODS.includes(f.method) ? f.method : 'cash', ref = f.ref.trim();
@@ -1232,8 +1246,8 @@ document.addEventListener('click', ev => {
 document.addEventListener('submit', ev => {
   ev.preventDefault();
   const form = ev.target, fn = F[form.dataset.form]; if (!fn) return;
-  const fd = new FormData(form), o = { among: fd.getAll('among') };
-  for (const [k, v] of fd.entries()) if (k !== 'among' && typeof v === 'string') o[k] = v;
+  const fd = new FormData(form), o = { among: fd.getAll('among'), join: fd.getAll('join') };
+  for (const [k, v] of fd.entries()) if (k !== 'among' && k !== 'join' && typeof v === 'string') o[k] = v;
   run(fn, o);
 });
 document.addEventListener('change', ev => {
